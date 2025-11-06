@@ -19,7 +19,6 @@ class VeoGeminiVideoGenerator:
                 "prompt": ("STRING", {"multiline": True, "default": "a cat reading a book"}),
                 "model": (["veo-2.0-generate-001"], {"default": "veo-2.0-generate-001"}),
                 "aspect_ratio": (["16:9", "9:16"], {"default": "16:9"}),
-                "number_of_videos": ("INT", {"default": 1, "min": 1, "max": 4, "step": 1}),
                 "duration_seconds": ("INT", {"default": 8, "min": 5, "max": 8, "step": 1}),
                 "api_key": ("STRING", {"default": "", "multiline": False}),
                 "seed": ("INT", {"default": 69, "min": -1, "max": 2147483646, "step": 1}),
@@ -86,8 +85,7 @@ class VeoGeminiVideoGenerator:
         Image.fromarray(img_array).save(buffered, format="PNG")
         return buffered.getvalue()
     
-    def generate_video(self, seed: int, prompt: str, model: str, aspect_ratio: str, number_of_videos: int,
-                      duration_seconds: int, api_key: str,
+    def generate_video(self, seed: int, prompt: str, model: str, aspect_ratio: str, duration_seconds: int, api_key: str,
                       negative_prompt: Optional[str] = None, image: Optional[torch.Tensor] = None):
         
         try:
@@ -99,7 +97,7 @@ class VeoGeminiVideoGenerator:
             comfy_seed = seed
             config_params = {
                 "aspect_ratio": aspect_ratio,
-                "number_of_videos": number_of_videos,
+                "number_of_videos": 1,
                 "duration_seconds": duration_seconds,
             }
             
