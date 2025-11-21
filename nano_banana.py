@@ -13,10 +13,12 @@ class NanoBananaNode:
         return {
             "required": {
             "api_key": ("STRING", {"multiline": False, "default": ""}),
+            "model": (["gemini-3-pro-image-preview", "gemini-2.5-flash-image"],),
             "aspect_ratio": (["1:1", "2:3", "3:2", "3:4", "4:3", "9:16", "16:9", "21:9"],),
             "temperature": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 1.0, "step": 0.01}),
             "top_p": ("FLOAT", {"default": 0.85, "min": 0.0, "max": 1.0, "step": 0.01}),
             "seed": ("INT", {"default": 69, "min": -1, "max": 2147483646, "step": 1}),
+            "resolution": (["1K", "2K", "4K"], {"default": "1K"}),
             },
             "optional": {
             "prompt": ("STRING", {"multiline": True, "default": ""}),
@@ -47,7 +49,7 @@ class NanoBananaNode:
         tensor = torch.from_numpy(array)
         return tensor.unsqueeze(0)
     
-    def generate(self, api_key, aspect_ratio, temperature, top_p, seed,
+    def generate(self, api_key, model, aspect_ratio, resolution, temperature, top_p, seed,
                  prompt="", system_instruction="", 
                  image_1=None, image_2=None, image_3=None, image_4=None, image_5=None):
         
@@ -80,21 +82,27 @@ class NanoBananaNode:
         
         contents = [types.Content(role="user", parts=parts)]
         
-        # Build config
-        config = types.GenerateContentConfig(
-            temperature=temperature,
-            seed=seed,
-            top_p=top_p,
-            response_modalities=["IMAGE"],
-            image_config=types.ImageConfig(aspect_ratio=aspect_ratio),
-        )
+        config_dict = {
+            "temperature": temperature,
+            "seed": seed,
+            "top_p": top_p,
+            "response_modalities": ["IMAGE"],
+            "image_config": types.ImageConfig(aspect_ratio=aspect_ratio),
+        }
+
+        if "gemini-3-pro" in model:
+            config_dict["image_config"] = types.ImageConfig(aspect_ratio=aspect_ratio, image_size=resolution)
+        else:
+            print("gemini-2.5-flash-image does not support resolution parameter, using default resolution")
+
+        config = types.GenerateContentConfig(**config_dict)
         
         if system_instruction.strip():
             config.system_instruction = [types.Part.from_text(text=system_instruction)]
         
         # Generate
         response = client.models.generate_content(
-            model="gemini-2.5-flash-image",
+            model=model,
             contents=contents,
             config=config,
         )
@@ -113,7 +121,7 @@ class NanoBananaNode:
     
     @classmethod
     def IS_CHANGED(cls, **kwargs):
-        return f"{kwargs.get('prompt', '')}-{kwargs.get('temperature', 0.5)}-{kwargs.get('top_p', 0.85)}-{kwargs.get('seed', 69)}-{kwargs.get('aspect_ratio', '1:1')}-{kwargs.get('image_1')}-{kwargs.get('image_2')}-{kwargs.get('image_3')}-{kwargs.get('image_4')}-{kwargs.get('image_5')}"
+        return f"{kwargs.get('prompt', '')}-{kwargs.get('temperature', 0.5)}-{kwargs.get('top_p', 0.85)}-{kwargs.get('seed', 69)}-{kwargs.get('aspect_ratio', '1:1')}-{kwargs.get('model', 'gemini-3-pro-image-preview')}-{kwargs.get('image_1')}-{kwargs.get('image_2')}-{kwargs.get('image_3')}-{kwargs.get('image_4')}-{kwargs.get('image_5')}"
 
 NODE_CLASS_MAPPINGS = {"NanoBananaNode": NanoBananaNode}
 NODE_DISPLAY_NAME_MAPPINGS = {"NanoBananaNode": "Nano Banana"}
