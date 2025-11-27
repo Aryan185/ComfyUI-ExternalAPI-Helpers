@@ -29,7 +29,7 @@ Documentation = "https://github.com/Aryan185/ComfyUI-ExternalAPI-Helpers/wiki"
 "Bug Tracker" = "https://github.com/Aryan185/ComfyUI-ExternalAPI-Helpers/issues"
 
 [tool.comfy]
-PublisherId = ""
+PublisherId = "aryyy18"
 DisplayName = "ComfyUI-ExternalAPI-Helpers"
 Icon = ""
 includes = [] 
