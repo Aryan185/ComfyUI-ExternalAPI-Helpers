@@ -1,6 +1,6 @@
 [project]
 name = "externalapi-helpers"
-description = "Various ComfyUI nodes Gemini, Replicate and OpenAI"
+description = "Various ComfyUI nodes for Gemini, Replicate and OpenAI"
 version = "1.0.0"
 license = {file = "LICENSE"} 
 # classifiers = [
