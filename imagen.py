@@ -17,6 +17,11 @@ class GoogleImagenNode:
                 "number_of_images": ("INT", {"default": 1, "min": 1, "max": 4, "step": 1}),
                 "aspect_ratio": (["1:1", "9:16", "16:9", "4:3", "3:4"],),
                 "image_size": (["1K", "2K"],),
+                "seed": ("INT", {"default": 69, "min": 1, "max": 2147483646, "step": 1}),
+                "guidance_scale": ("FLOAT", {"default": 7.5, "min": 1.0, "max": 20.0, "step": 0.1}),
+                },
+                "optional": {
+                "negative_prompt": ("STRING", {"multiline": True, "default": ""}),
             }
         }
     
@@ -39,7 +44,7 @@ class GoogleImagenNode:
         
         return torch.stack(tensors)
     
-    def generate_images(self, prompt, api_key, model, number_of_images, aspect_ratio, image_size):
+    def generate_images(self, prompt, api_key, model, number_of_images, aspect_ratio, image_size, seed, guidance_scale, negative_prompt=""):
         try:
             key = api_key.strip() or os.environ.get("GEMINI_API_KEY")
             if not key:
@@ -47,12 +52,18 @@ class GoogleImagenNode:
             
             client = genai.Client(api_key=key)
             
-            config = types.GenerateImagesConfig(
-                number_of_images=number_of_images,
-                include_rai_reason=True,
-                output_mime_type="image/jpeg",
-                aspect_ratio=aspect_ratio,
-            )
+            config_params = {
+                "number_of_images": number_of_images,
+                "aspect_ratio": aspect_ratio,
+                "add_watermark": False,
+                "seed": seed,
+                "guidance_scale": guidance_scale,
+            }
+            
+            if negative_prompt and negative_prompt.strip():
+                config_params["negative_prompt"] = negative_prompt
+            
+            config = types.GenerateImagesConfig(**config_params)
             
             if model in ["models/imagen-4.0-ultra-generate-001", "models/imagen-4.0-generate-001"]:
                 config.image_size = image_size

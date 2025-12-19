@@ -9,14 +9,13 @@ A collection of powerful custom nodes for ComfyUI that connect your local workfl
 *   **FLUX Kontext Pro & Max:** Image-to-image transformations using the FLUX models via the Replicate API.
 *   **Gemini Chat:** Google's powerful multimodal AI. Ask questions about an image, generate detailed descriptions or create prompts for other models. Supports thinking budget controls for applicable models.
 *   **Gemini Segmentation:** Generate segmentation masks for objects in an image using Gemini.
+*   **Gemini Speaker Diarization:** Separate audio into different speaker tracks using Gemini.
 *   **GPT Image Edit:** OpenAI's `gpt-image-1` for prompt-based image editing and inpainting. Simply mask an area and describe the change you want to see.
 *   **Google Imagen Generator & Edit:** Create and edit images with Google's Imagen models, with support for Vertex AI.
 *   **Nano Banana:** A creative image generation node using a specialized Gemini model.
-*   **Veo Text-to-Video:** Generate high-quality video clips from text prompts using Google's Veo model via Vertex AI.
+*   **Veo Video Generator:** Generate high-quality video clips from text prompts using Google's Veo model via Vertex AI or the Gemini API.
 *   **ElevenLabs TTS:** Generate high-quality speech from text using ElevenLabs' diverse range of voices and models.
 *   **Gemini TTS:** Create speech from text using Google's Gemini models.
-*   **Seamless Integration:** All nodes are designed to work seamlessly with standard ComfyUI inputs (IMAGE, MASK, STRING) and outputs, allowing you to chain them into complex and creative workflows.
-*   **Secure & Simple:** Simply provide your API key in the node's input field to get started.
 
 ---
 
@@ -46,10 +45,10 @@ A collection of powerful custom nodes for ComfyUI that connect your local workfl
 All nodes in this collection require API keys to function.
 
 *   **FLUX Nodes (Replicate):** You will need a [Replicate API Token](https://replicate.com/account/api-tokens).
-*   **Gemini, Imagen, Nano Banana, and Gemini TTS Nodes:** You will need a [Google AI Studio API Key](https://aistudio.google.com/app/api-keys).
+*   **Gemini, Imagen, Nano Banana, Gemini TTS, Gemini Diarization, and Veo (Gemini API) Nodes:** You will need a [Google AI Studio API Key](https://aistudio.google.com/app/api-keys).
 *   **GPT Image Edit Node:** You will need an [OpenAI API Key](https://platform.openai.com/api-keys).
 *   **ElevenLabs TTS Node:** You will need an [ElevenLabs API Key](https://elevenlabs.io/).
-*   **Vertex AI Nodes (Imagen Edit, Veo):** You will need a Google Cloud Project ID, a service account with appropriate permissions, and the location for the resources.
+*   **Vertex AI Nodes (Imagen Edit, Veo Vertex AI):** You will need a Google Cloud Project ID, a service account with appropriate permissions, and the location for the resources.
 
 You can paste your key directly into the `api_key` field on the corresponding node. For Vertex AI nodes, you will need to provide the project ID, location, and path to your service account JSON file.
 
@@ -101,6 +100,22 @@ This node uses a Gemini model to generate segmentation masks for specified objec
     *   `...other_params`: Controls for temperature, thinking, and seed.
 *   **Output:**
     *   `mask`: A black and white mask of the segmented objects.
+
+### Gemini Speaker Diarization
+
+Separate audio into different speaker tracks using Gemini.
+
+*   **Category:** `audio/diarise`
+*   **Inputs:**
+    *   `audio`: The input audio to process.
+    *   `num_speakers`: The expected number of speakers (default: 2).
+    *   `model`: The Gemini model to use (e.g., `gemini-2.5-flash`).
+    *   `api_key`: Your API key from Google AI Studio.
+    *   `thinking`: Enable thinking process (optional).
+    *   `thinking_budget`: Token budget for thinking (optional).
+    *   `...other_params`: Controls for temperature and seed.
+*   **Output:**
+    *   `speaker_1` to `speaker_4`: Audio tracks for up to 4 separated speakers.
 
 ### GPT Image Edit
 
@@ -161,7 +176,7 @@ A creative image generation node that can take a combination of text and up to f
 *   **Output:**
     *   `image`: The generated image.
 
-### Veo Text-to-Video (Vertex AI)
+### Veo Video Generator (Vertex AI)
 
 Generate short, high-quality video clips from a text description using Google's Veo model on Vertex AI.
 
@@ -174,6 +189,22 @@ Generate short, high-quality video clips from a text description using Google's 
     *   `...other_params`: Controls for negative prompt, aspect ratio, audio generation, and seed.
 *   **Output:**
     *   `frames`: The generated video frames, output as an image batch.
+
+### Veo Video Generator (Gemini API)
+
+Generate videos using Google's Veo 2.0 model via the Gemini API. Supports text-to-video and image-to-video.
+
+*   **Category:** `video/generation`
+*   **Inputs:**
+    *   `prompt`: A text description of the video.
+    *   `image` (Optional): An input image for image-to-video generation.
+    *   `api_key`: Your API key from Google AI Studio.
+    *   `model`: The Veo model to use (e.g., `veo-2.0-generate-001`).
+    *   `aspect_ratio`: Desired aspect ratio (16:9 or 9:16).
+    *   `duration_seconds`: Duration of the video (e.g., 5-8 seconds).
+    *   `...other_params`: Controls for negative prompt and seed.
+*   **Output:**
+    *   `frames`: The generated video frames.
 
 ---
 
