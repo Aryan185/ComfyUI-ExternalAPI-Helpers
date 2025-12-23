@@ -1,7 +1,5 @@
 import os
-import struct
-import io
-import torchaudio
+import torch
 from google.genai import Client, types
 
 class GeminiTTSNode:
@@ -10,15 +8,15 @@ class GeminiTTSNode:
     def INPUT_TYPES(cls):
         return {
             "required": {
-            "text": ("STRING", {"multiline": True, "default": ""}),
-            "api_key": ("STRING", {"multiline": False, "default": ""}),
-            "model": (["gemini-2.5-flash-preview-tts", "gemini-2.5-pro-preview-tts"],),
-            "voice_id": (["Zephyr", "Puck", "Charon", "Kore", "Fenrir", "Leda", "Orus", "Aoede", "Callirrhoe", "Autonoe", "Enceladus", "Iapetus", "Umbriel", "Algieba", "Despina", "Erinome", "Achernar", "Laomedeia", "Rasalgethi", "Algenib", "Achird", "Pulcherrima", "Gacrux", "Schedar", "Alnilam", "Sulafat", "Sadaltager", "Sadachbia", "Vindemiatrix", "Zubenelgenubi"],),                
-            "seed": ("INT", {"default": 69, "min": -1, "max": 2147483646, "step": 1}),
-            "temperature": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01}),
+                "text": ("STRING", {"multiline": True, "default": ""}),
+                "api_key": ("STRING", {"multiline": False, "default": ""}),
+                "model": (["gemini-2.5-flash-preview-tts", "gemini-2.5-pro-preview-tts"],),
+                "voice_id": (["Zephyr", "Puck", "Charon", "Kore", "Fenrir", "Leda", "Orus", "Aoede", "Callirrhoe", "Autonoe", "Enceladus", "Iapetus", "Umbriel", "Algieba", "Despina", "Erinome", "Achernar", "Laomedeia", "Rasalgethi", "Algenib", "Achird", "Pulcherrima", "Gacrux", "Schedar", "Alnilam", "Sulafat", "Sadaltager", "Sadachbia", "Vindemiatrix", "Zubenelgenubi"],),                
+                "seed": ("INT", {"default": 69, "min": -1, "max": 2147483646, "step": 1}),
+                "temperature": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01}),
             },
             "optional": {
-            "system_prompt": ("STRING", {"multiline": True, "default": ""}),
+                "system_prompt": ("STRING", {"multiline": True, "default": ""}),
             }
         }
     
@@ -61,9 +59,8 @@ class GeminiTTSNode:
             ),
         )
         
-        # Generate audio
+        # Generate audio - collect raw PCM chunks
         audio_data = b""
-        mime_type = None
         
         for chunk in client.models.generate_content_stream(
             model=model,
@@ -76,26 +73,16 @@ class GeminiTTSNode:
                 
                 inline_data = chunk.candidates[0].content.parts[0].inline_data
                 audio_data += inline_data.data
-                if mime_type is None:
-                    mime_type = inline_data.mime_type
         
         if not audio_data:
             raise ValueError("No audio data received from API.")
         
-        if mime_type and "L16" in mime_type:
-            header = struct.pack(
-                "<4sI4s4sIHHIIHH4sI",
-                b"RIFF", 36 + len(audio_data),
-                b"WAVE", b"fmt ", 16, 1, 1, 24000, 48000, 2, 16,
-                b"data", len(audio_data)
-            )
-            audio_data = header + audio_data
+        # Convert raw PCM to waveform tensor
+        waveform = torch.frombuffer(bytearray(audio_data), dtype=torch.int16)
+        waveform = waveform.to(torch.float32) / 32768.0
+        waveform = waveform.unsqueeze(0)
+        sample_rate = 24000
         
-        # Decode audio from memory
-        audio_buffer = io.BytesIO(audio_data)
-        waveform, sample_rate = torchaudio.load(audio_buffer)
-        
-        # Return in ComfyUI audio format
         return ({"waveform": waveform.unsqueeze(0), "sample_rate": sample_rate},)
     
     @classmethod

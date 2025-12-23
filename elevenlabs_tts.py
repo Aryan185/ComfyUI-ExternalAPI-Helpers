@@ -1,7 +1,8 @@
 import os
 import io
+import torch
 import requests
-import torchaudio
+import soundfile as sf
 
 class ElevenLabsTTSNode:
     
@@ -115,11 +116,17 @@ class ElevenLabsTTSNode:
         if response.status_code != 200:
             raise Exception(f"ElevenLabs API Error: {response.status_code}, {response.text}")
         
-        # Decode audio from memory
+        # Decode audio with soundfile
         audio_buffer = io.BytesIO(response.content)
-        waveform, sample_rate = torchaudio.load(audio_buffer)
+        waveform, sample_rate = sf.read(audio_buffer, dtype='float32')
+        waveform = torch.from_numpy(waveform)
         
-        # Return in ComfyUI audio format
+        # Ensure correct shape [channels, samples]
+        if waveform.dim() == 1:
+            waveform = waveform.unsqueeze(0)
+        else:
+            waveform = waveform.t()
+        
         return ({"waveform": waveform.unsqueeze(0), "sample_rate": sample_rate},)
     
     @classmethod
