@@ -1,4 +1,6 @@
 import os
+import json
+import tempfile
 import torch
 import numpy as np
 from PIL import Image
@@ -19,12 +21,15 @@ class GoogleImagenEditNode:
                 "prompt": ("STRING", {"multiline": True, "default": "Edit this image"}),
                 "negative_prompt": ("STRING", {"multiline": True, "default": ""}),
                 "project_id": ("STRING", {"multiline": False, "default": ""}),
-                "location": (["us-central1", "us-east1", "us-east4", "us-east5", "us-south1", "us-west1", "us-west2", "us-west3", "us-west4", "northamerica-northeast1", "northamerica-northeast2", "southamerica-east1", "southamerica-west1", "africa-south1", "europe-west1", "europe-north1", "europe-west2", "europe-west3", "europe-west4", "europe-west6", "europe-west8", "europe-west9", "europe-west12", "europe-southwest1", "europe-central2", "asia-east1", "asia-east2", "asia-northeast1", "asia-northeast2", "asia-northeast3", "asia-south1", "asia-south2", "asia-southeast1", "asia-southeast2", "australia-southeast1", "australia-southeast2", "me-central1", "me-central2", "me-west1"], {"default": "us-central1"}),
-                "service_account": ("STRING", {"multiline": False, "default": ""}),
+                "location": (["global", "us-central1", "us-east1", "us-east4", "us-east5", "us-south1", "us-west1", "us-west2", "us-west3", "us-west4", "northamerica-northeast1", "northamerica-northeast2", "southamerica-east1", "southamerica-west1", "africa-south1", "europe-west1", "europe-north1", "europe-west2", "europe-west3", "europe-west4", "europe-west6", "europe-west8", "europe-west9", "europe-west12", "europe-southwest1", "europe-central2", "asia-east1", "asia-east2", "asia-northeast1", "asia-northeast2", "asia-northeast3", "asia-south1", "asia-south2", "asia-southeast1", "asia-southeast2", "australia-southeast1", "australia-southeast2", "me-central1", "me-central2", "me-west1"], {"default": "us-central1"}),
+                "service_account": ("STRING", {"multiline": True, "default": ""}),
                 "edit_mode": (["EDIT_MODE_INPAINT_INSERTION", "EDIT_MODE_INPAINT_REMOVAL", "EDIT_MODE_OUTPAINT", "EDIT_MODE_BGSWAP"], {"default": "EDIT_MODE_INPAINT_INSERTION"}),
                 "number_of_images": ("INT", {"default": 1, "min": 1, "max": 4, "step": 1}),
-                "seed": ("INT", {"default": 12345, "min": 1, "max": 4294967295, "step": 1}),
-                "base_steps": ("INT", {"default": 50, "min": 10, "max": 100, "step": 1})
+                "seed": ("INT", {"default": 69, "min": 1, "max": 2147483646, "step": 1}),
+                "base_steps": ("INT", {"default": 50, "min": 10, "max": 100, "step": 1}),
+                "guidance_scale": ("FLOAT", {"default": 7.5, "min": 1.0, "max": 20.0, "step": 0.1}),
+                "mask_dilation": ("FLOAT", {"default": 0.03, "min": 0.0, "max": 1.0, "step": 0.01}),
+
             }
         }
     
@@ -32,6 +37,30 @@ class GoogleImagenEditNode:
     RETURN_NAMES = ("edited_images",)
     FUNCTION = "edit_image"
     CATEGORY = "image/edit"
+    
+    def setup_client(self, service_account_json, project_id, location):
+        """Setup Vertex AI client with service account JSON content"""
+        if not service_account_json.strip():
+            raise ValueError("Service account JSON content is required.")
+        
+        if not project_id.strip():
+            raise ValueError("Project ID is required.")
+        
+        # Validate and write JSON content to temporary file
+        try:
+            json.loads(service_account_json)  # Validate JSON format
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON content: {str(e)}")
+        
+        # Create temporary file with JSON content
+        temp_file = tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False)
+        temp_file.write(service_account_json.strip())
+        temp_file.close()
+        
+        # Set credentials path
+        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = temp_file.name
+        
+        return genai.Client(vertexai=True, project=project_id.strip(), location=location.strip())
     
     def tensor_to_pil(self, tensor):
         array = (tensor.cpu().numpy() * 255).astype(np.uint8)
@@ -54,18 +83,10 @@ class GoogleImagenEditNode:
             tensors.append(torch.from_numpy(array))
         return torch.stack(tensors)
     
-    def edit_image(self, image, mask, prompt, project_id, location, service_account, edit_mode, number_of_images, negative_prompt, seed, base_steps):
+    def edit_image(self, image, mask, prompt, project_id, location, service_account, edit_mode, number_of_images, negative_prompt, seed, base_steps, guidance_scale, mask_dilation):
         try:
-            if service_account.strip():
-                os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = service_account.strip()
-            
-            if not os.environ.get('GOOGLE_APPLICATION_CREDENTIALS'):
-                raise ValueError("No authentication provided.")
-            
-            if not project_id.strip():
-                raise ValueError("Project ID is required.")
-            
-            client = genai.Client(vertexai=True, project=project_id.strip(), location=location.strip())
+            # Initialize Vertex AI client with improved authentication
+            client = self.setup_client(service_account, project_id, location)
             
             input_image = self.tensor_to_pil(image[0])
             input_mask = self.mask_to_pil(mask)
@@ -88,7 +109,7 @@ class GoogleImagenEditNode:
                 reference_image={'image_bytes': mask_b64},
                 config=types.MaskReferenceConfig(
                     mask_mode="MASK_MODE_USER_PROVIDED",
-                    mask_dilation=0.03,
+                    mask_dilation=mask_dilation,
                 ),
             )
             
@@ -98,7 +119,8 @@ class GoogleImagenEditNode:
                 "include_rai_reason": True,
                 "output_mime_type": "image/jpeg",
                 "base_steps": base_steps,
-                "seed": seed
+                "seed": seed,
+                "guidance_scale": guidance_scale,
             }
             
             if negative_prompt.strip():
