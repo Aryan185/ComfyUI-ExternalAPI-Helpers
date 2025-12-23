@@ -6,31 +6,20 @@ import numpy as np
 from PIL import Image
 import io
 
-class FluxKontextMaxNode:
+class FluxKontextNode:
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
                 "image": ("IMAGE",),
-                "prompt": ("STRING", {
-                    "multiline": True,
-                    "default": "Make this a 90s cartoon"
-                }),
-                "api_key": ("STRING", {
-                    "default": ""
-                }),
-                "aspect_ratio": (["1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "5:4", "4:5", "21:9", "9:21", "2:1", "1:2", "match_input_image"], {
-                    "default": "match_input_image"
-                }),
-                "output_format": (["jpg", "png"], {
-                    "default": "jpg"
-                }),
-                "safety_tolerance": ("INT", {
-                    "default": 2,
-                    "min": 0,
-                    "max": 6,
-                    "step": 1
-                }),
+                "prompt": ("STRING", {"multiline": True, "default": "Make this a 90s cartoon"}),
+                "api_key": ("STRING", {"default": ""}),
+                "model": (["flux-kontext-dev", "flux-kontext-max", "flux-kontext-pro"], {"default": "flux-kontext-dev"}),
+                "aspect_ratio": (["1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "5:4", "4:5", "21:9", "9:21", "2:1", "1:2", "match_input_image"], {"default": "match_input_image"}),
+                "output_format": (["jpg", "png"], {"default": "jpg"}),
+                "safety_tolerance": ("INT", {"default": 2, "min": 0, "max": 6, "step": 1}),
+                "seed": ("INT", {"default": 69, "min": 1, "max": 2147483646, "step": 1}),
+                "prompt_upsampling": ("BOOLEAN", {"default": False})
             }
         }
     
@@ -39,7 +28,7 @@ class FluxKontextMaxNode:
     FUNCTION = "generate_image"
     CATEGORY = "image/edit"
     
-    def generate_image(self, image, prompt, api_key, aspect_ratio, output_format, safety_tolerance):
+    def generate_image(self, image, prompt, api_key, model, aspect_ratio, output_format, safety_tolerance, seed, prompt_upsampling):
         try:
             os.environ["REPLICATE_API_TOKEN"] = api_key
             
@@ -53,16 +42,21 @@ class FluxKontextMaxNode:
             pil_image.save(img_buffer, format='PNG')
             img_buffer.seek(0)
             
-            # Run Replicate model
+            # Build input dict with all parameters for both models
+            replicate_input = {
+                "prompt": prompt,
+                "input_image": img_buffer,
+                "aspect_ratio": aspect_ratio,
+                "output_format": output_format,
+                "safety_tolerance": safety_tolerance,
+                "seed": seed,
+                "prompt_upsampling": prompt_upsampling
+            }
+            
+            # Run Replicate model with selected model
             output = replicate.run(
-                "black-forest-labs/flux-kontext-max",
-                input={
-                    "prompt": prompt,
-                    "input_image": img_buffer,
-                    "aspect_ratio": aspect_ratio,
-                    "output_format": output_format,
-                    "safety_tolerance": safety_tolerance
-                }
+                f"black-forest-labs/{model}",
+                input=replicate_input
             )
             
             # Get URL from output
@@ -85,9 +79,9 @@ class FluxKontextMaxNode:
             return (torch.zeros((1, 512, 512, 3)),)
 
 NODE_CLASS_MAPPINGS = {
-    "FluxKontextMaxNode": FluxKontextMaxNode
+    "FluxKontextNode": FluxKontextNode
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "FluxKontextMaxNode": "Flux Kontext Max"
+    "FluxKontextNode": "Flux Kontext"
 }
