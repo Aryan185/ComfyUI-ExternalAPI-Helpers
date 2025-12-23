@@ -6,7 +6,7 @@ import numpy as np
 from PIL import Image
 import io
 
-class FluxKontextNode:
+class FluxKontextReplicate:
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -76,12 +76,7 @@ class FluxKontextNode:
             return (output_tensor,)
             
         except Exception as e:
-            return (torch.zeros((1, 512, 512, 3)),)
+            raise RuntimeError(f"Flux Kontext generation failed: {str(e)}") from e
 
-NODE_CLASS_MAPPINGS = {
-    "FluxKontextNode": FluxKontextNode
-}
-
-NODE_DISPLAY_NAME_MAPPINGS = {
-    "FluxKontextNode": "Flux Kontext"
-}
+NODE_CLASS_MAPPINGS = {"FluxKontextReplicate": FluxKontextReplicate}
+NODE_DISPLAY_NAME_MAPPINGS = {"FluxKontextReplicate": "Flux Kontext (Replicate)"}
