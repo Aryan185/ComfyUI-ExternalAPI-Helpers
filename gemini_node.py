@@ -2,22 +2,23 @@ import os
 import io
 import numpy as np
 import torch
+import wave
 from PIL import Image
 from typing import Optional
 from google import genai
 from google.genai import types
 
 class GeminiChatNode:
-    """ComfyUI Node for Gemini API Chat with optional image input"""
+    """ComfyUI Node for Gemini API Chat with optional image and audio input"""
     
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
                 "prompt": ("STRING", {"multiline": True}),
-                "model": ("STRING", {"default": "gemini-2.5-pro", "multiline": False}),
+                "model": (["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.5-flash-lite", "gemini-3-pro-preview", "gemini-3-flash-preview", "gemini-flash-latest", "gemini-flash-lite-latest", "gemini-2.0-flash", "gemini-2.0-flash-lite"], {"default": "gemini-2.5-flash"}),
                 "temperature": ("FLOAT", {"default": 0.2, "min": 0.0, "max": 2.0, "step": 0.1}),
-                "thinking": ("BOOLEAN", {"default": True}),
+                "thinking": ("BOOLEAN", {"default": False}),
                 "seed": ("INT", {"default": 69, "min": -1, "max": 2147483646, "step": 1}),
                 "api_key": ("STRING", {"default": "", "multiline": False})
             },
@@ -25,6 +26,7 @@ class GeminiChatNode:
                 "system_instruction": ("STRING", {"multiline": True, "default": ""}),
                 "thinking_budget": ("INT", {"default": -1, "min": -1, "max": 24576, "step": 1}),
                 "image": ("IMAGE",),
+                "audio": ("AUDIO",),
             }
         }
     
@@ -33,9 +35,39 @@ class GeminiChatNode:
     FUNCTION = "generate"
     CATEGORY = "text/generation"
     
+    def audio_to_bytes(self, audio):
+        if isinstance(audio, dict):
+            audio_data = audio.get("waveform")
+            sr = audio.get("sample_rate", 44100)
+        elif isinstance(audio, (list, tuple)) and len(audio) >= 2:
+            audio_data, sr = audio[0], audio[1]
+        else:
+            raise ValueError(f"Invalid audio input format: {type(audio)}")
+        
+        if audio_data is None:
+            raise ValueError("Missing audio data")
+        
+        if isinstance(audio_data, torch.Tensor):
+            audio_data = audio_data.cpu().numpy()
+        
+        # Convert to WAV bytes
+        audio_data = np.squeeze(audio_data)
+        if audio_data.dtype in [np.float32, np.float64]:
+            audio_data = np.clip(audio_data, -1.0, 1.0)
+            audio_data = (audio_data * 32767).astype(np.int16)
+        
+        wav_buffer = io.BytesIO()
+        with wave.open(wav_buffer, 'wb') as wav_file:
+            wav_file.setnchannels(1)
+            wav_file.setsampwidth(2)
+            wav_file.setframerate(int(sr))
+            wav_file.writeframes(audio_data.tobytes())
+        
+        return wav_buffer.getvalue()
+    
     def generate(self, prompt: str, model: str, temperature: float, thinking: bool, seed: int, api_key: str,
                  system_instruction: Optional[str] = None, thinking_budget: int = -1, 
-                 image: Optional[torch.Tensor] = None) -> tuple:   
+                 image: Optional[torch.Tensor] = None, audio: Optional[dict] = None) -> tuple:   
 
         key = api_key.strip() or os.environ.get("GEMINI_API_KEY")
         if not key:
@@ -57,6 +89,11 @@ class GeminiChatNode:
             buffered = io.BytesIO()
             Image.fromarray(img_array).save(buffered, format="PNG")
             parts.append(types.Part.from_bytes(mime_type="image/png", data=buffered.getvalue()))
+        
+        # Handle audio input
+        if audio is not None:
+            audio_bytes = self.audio_to_bytes(audio)
+            parts.append(types.Part.from_bytes(mime_type="audio/wav", data=audio_bytes))
         
         model_lower = model.lower()
         
