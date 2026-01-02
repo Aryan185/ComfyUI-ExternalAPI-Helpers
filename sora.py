@@ -27,8 +27,8 @@ class SoraGen:
     CATEGORY = "video/generation"
     OUTPUT_IS_LIST = (True, False)
 
-    def gen_video(self, prompt, openai_api_key, model, size, duration, seed, input_image=None):
-        client = OpenAI(api_key=openai_api_key)
+    def generate_video(self, prompt, api_key, model, size, duration, seed, input_image=None):
+        client = OpenAI(api_key=api_key)
         api_args = {"prompt": prompt, "model": model, "size": size, "seconds": duration}
         
         img_buf = None
