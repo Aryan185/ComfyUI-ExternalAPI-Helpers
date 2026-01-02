@@ -30,64 +30,53 @@ class GeminiTTSNode:
         if not text.strip():
             raise ValueError("Text input cannot be empty.")
         
-        key = api_key.strip() or os.environ.get("GEMINI_TTS_API_KEY")
+        key = api_key.strip() or os.environ.get("GEMINI_API_KEY")
         if not key:
             raise ValueError("No API key provided.")
         
-        client = Client(
-            api_key=key,
-            http_options=types.HttpOptions(
-                retry_options=types.HttpRetryOptions(attempts=10, jitter=10)
+        client = Client(api_key=key)
+        
+        final_prompt = text
+        if system_prompt.strip():
+            final_prompt = f"{system_prompt.strip()}\n\n{text}"
+
+        speech_config = types.SpeechConfig(
+            voice_config=types.VoiceConfig(
+                prebuilt_voice_config=types.PrebuiltVoiceConfig(voice_name=voice_id)
             )
         )
-        
-        # Build prompt
-        prompt_text = text
-        if system_prompt.strip():
-            prompt_text = system_prompt.strip() + ":\n\n\"" + text + "\""
-        
-        contents = [types.Content(role="user", parts=[types.Part.from_text(text=prompt_text)])]
         
         config = types.GenerateContentConfig(
             temperature=temperature,
             seed=seed,
-            response_modalities=["audio"],
-            speech_config=types.SpeechConfig(
-                voice_config=types.VoiceConfig(
-                    prebuilt_voice_config=types.PrebuiltVoiceConfig(voice_name=voice_id)
-                )
-            ),
+            response_modalities=["AUDIO"],
+            speech_config=speech_config,
         )
         
-        # Generate audio - collect raw PCM chunks
-        audio_data = b""
-        
-        for chunk in client.models.generate_content_stream(
-            model=model,
-            contents=contents,
-            config=config
-        ):
-            if (chunk.candidates and chunk.candidates[0].content and 
-                chunk.candidates[0].content.parts and 
-                chunk.candidates[0].content.parts[0].inline_data):
-                
-                inline_data = chunk.candidates[0].content.parts[0].inline_data
-                audio_data += inline_data.data
-        
-        if not audio_data:
-            raise ValueError("No audio data received from API.")
-        
-        # Convert raw PCM to waveform tensor
-        waveform = torch.frombuffer(bytearray(audio_data), dtype=torch.int16)
+        try:
+            response = client.models.generate_content(
+                model=model,
+                contents=final_prompt,
+                config=config
+            )
+        except Exception as e:
+            raise RuntimeError(f"Gemini API Error: {str(e)}")
+
+        try:
+            inline_data = response.candidates[0].content.parts[0].inline_data
+            audio_bytes = inline_data.data
+        except (AttributeError, IndexError, TypeError):
+            raise ValueError("API returned a response, but it contained no audio data.")
+
+        waveform = torch.frombuffer(bytearray(audio_bytes), dtype=torch.int16)
         waveform = waveform.to(torch.float32) / 32768.0
-        waveform = waveform.unsqueeze(0)
-        sample_rate = 24000
+        waveform = waveform.unsqueeze(0).unsqueeze(0)
         
-        return ({"waveform": waveform.unsqueeze(0), "sample_rate": sample_rate},)
+        return ({"waveform": waveform, "sample_rate": 24000},)
     
     @classmethod
-    def IS_CHANGED(cls, **kwargs):
-        return f"{kwargs.get('text', '')}-{kwargs.get('voice_id', '')}-{kwargs.get('temperature', 1.0)}-{kwargs.get('model', '')}-{kwargs.get('seed', 69)}-{kwargs.get('system_prompt', '')}"
+    def IS_CHANGED(cls, seed, **kwargs):
+        return seed
 
 NODE_CLASS_MAPPINGS = {"GeminiTTSNode": GeminiTTSNode}
 NODE_DISPLAY_NAME_MAPPINGS = {"GeminiTTSNode": "Gemini TTS"}

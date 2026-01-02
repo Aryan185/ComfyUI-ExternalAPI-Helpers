@@ -12,22 +12,22 @@ class NanoBananaNode:
     def INPUT_TYPES(cls):
         return {
             "required": {
-            "api_key": ("STRING", {"multiline": False, "default": ""}),
-            "model": (["gemini-3-pro-image-preview", "gemini-2.5-flash-image"],),
-            "aspect_ratio": (["1:1", "2:3", "3:2", "3:4", "4:3", "9:16", "16:9", "21:9"],),
-            "temperature": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 1.0, "step": 0.01}),
-            "top_p": ("FLOAT", {"default": 0.85, "min": 0.0, "max": 1.0, "step": 0.01}),
-            "seed": ("INT", {"default": 69, "min": -1, "max": 2147483646, "step": 1}),
-            "resolution": (["1K", "2K", "4K"], {"default": "1K"}),
+                "prompt": ("STRING", {"multiline": True, "default": ""}),
+                "api_key": ("STRING", {"multiline": False, "default": ""}),
+                "model": (["gemini-3-pro-image-preview", "gemini-2.5-flash-image"],),
+                "aspect_ratio": (["1:1", "2:3", "3:2", "3:4", "4:3", "9:16", "16:9", "21:9"],),
+                "resolution": (["1K", "2K", "4K"], {"default": "1K"}),
+                "temperature": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 1.0, "step": 0.01}),
+                "top_p": ("FLOAT", {"default": 0.85, "min": 0.0, "max": 1.0, "step": 0.01}),
+                "seed": ("INT", {"default": 69, "min": -1, "max": 2147483646, "step": 1}),
             },
             "optional": {
-            "prompt": ("STRING", {"multiline": True, "default": ""}),
-            "system_instruction": ("STRING", {"multiline": True, "default": ""}),
-            "image_1": ("IMAGE",),
-            "image_2": ("IMAGE",),
-            "image_3": ("IMAGE",),
-            "image_4": ("IMAGE",),
-            "image_5": ("IMAGE",),
+                "system_instruction": ("STRING", {"multiline": True, "default": ""}),
+                "image_1": ("IMAGE",),
+                "image_2": ("IMAGE",),
+                "image_3": ("IMAGE",),
+                "image_4": ("IMAGE",),
+                "image_5": ("IMAGE",),
             }
         }
     
@@ -36,22 +36,17 @@ class NanoBananaNode:
     FUNCTION = "generate"
     CATEGORY = "image/generation"
     
-    def tensor_to_pil(self, tensor):
+    def _convert_tensor_to_bytes(self, tensor):
         if tensor.dim() == 4:
             tensor = tensor[0]
-        array = (tensor.cpu().numpy() * 255).astype(np.uint8)
-        return Image.fromarray(array)
-    
-    def pil_to_tensor(self, image):
-        if image.mode != 'RGB':
-            image = image.convert('RGB')
-        array = np.array(image).astype(np.float32) / 255.0
-        tensor = torch.from_numpy(array)
-        return tensor.unsqueeze(0)
-    
+        
+        arr = (tensor.cpu().numpy() * 255).astype(np.uint8)
+        buf = io.BytesIO()
+        Image.fromarray(arr).save(buf, format='PNG')
+        return buf.getvalue()
+
     def generate(self, api_key, model, aspect_ratio, resolution, temperature, top_p, seed,
-                 prompt="", system_instruction="", 
-                 image_1=None, image_2=None, image_3=None, image_4=None, image_5=None):
+                 prompt="", system_instruction="", **kwargs):
         
         key = api_key.strip() or os.environ.get("GEMINI_API_KEY")
         if not key:
@@ -59,69 +54,55 @@ class NanoBananaNode:
         
         client = genai.Client(api_key=key)
         
-        # Build parts list
         parts = []
+        input_images = [kwargs.get(f"image_{i}") for i in range(1, 6)]
+        for img in input_images:
+            if img is not None:
+                img_bytes = self._convert_tensor_to_bytes(img)
+                parts.append(types.Part.from_bytes(mime_type="image/png", data=img_bytes))
         
-        # Add images
-        for img_tensor in [image_1, image_2, image_3, image_4, image_5]:
-            if img_tensor is not None:
-                pil_img = self.tensor_to_pil(img_tensor)
-                buffer = io.BytesIO()
-                pil_img.save(buffer, format='PNG')
-                parts.append(types.Part.from_bytes(
-                    mime_type="image/png",
-                    data=buffer.getvalue()
-                ))
-        
-        # Add prompt if provided
         if prompt.strip():
             parts.append(types.Part.from_text(text=prompt))
-        
+            
         if not parts:
             raise ValueError("At least one image or prompt must be provided.")
-        
-        contents = [types.Content(role="user", parts=parts)]
-        
-        config_dict = {
-            "temperature": temperature,
-            "seed": seed,
-            "top_p": top_p,
-            "response_modalities": ["IMAGE"],
-            "image_config": types.ImageConfig(aspect_ratio=aspect_ratio),
-        }
 
+
+        img_config_params = {"aspect_ratio": aspect_ratio}
         if "gemini-3-pro" in model:
-            config_dict["image_config"] = types.ImageConfig(aspect_ratio=aspect_ratio, image_size=resolution)
-        else:
-            print("gemini-2.5-flash-image does not support resolution parameter, using default resolution")
-
-        config = types.GenerateContentConfig(**config_dict)
-        
-        if system_instruction.strip():
-            config.system_instruction = [types.Part.from_text(text=system_instruction)]
-        
-        # Generate
-        response = client.models.generate_content(
-            model=model,
-            contents=contents,
-            config=config,
+            img_config_params["image_size"] = resolution
+            
+        config = types.GenerateContentConfig(
+            temperature=temperature,
+            seed=seed,
+            top_p=top_p,
+            response_modalities=["IMAGE"],
+            image_config=types.ImageConfig(**img_config_params),
+            system_instruction=system_instruction.strip() if system_instruction.strip() else None
         )
         
-        result_image = None
-        if response.candidates and response.candidates[0].content and response.candidates[0].content.parts:
-            for part in response.candidates[0].content.parts:
-                if part.inline_data and part.inline_data.data:
-                    result_image = Image.open(io.BytesIO(part.inline_data.data))
-                    break
+        try:
+            response = client.models.generate_content(
+                model=model,
+                contents=[types.Content(role="user", parts=parts)],
+                config=config,
+            )
+        except Exception as e:
+            raise RuntimeError(f"Gemini API Error: {str(e)}")
         
-        if result_image is None:
-            raise ValueError("No image generated by the API.")
-        
-        return (self.pil_to_tensor(result_image),)
-    
+        try:
+            img_data = response.candidates[0].content.parts[0].inline_data.data
+            result_pil = Image.open(io.BytesIO(img_data)).convert("RGB")
+            
+            result_tensor = torch.from_numpy(np.array(result_pil).astype(np.float32) / 255.0).unsqueeze(0)
+            return (result_tensor,)
+            
+        except (AttributeError, IndexError, TypeError):
+            raise ValueError("API returned a response, but no valid image data was found.")
+
     @classmethod
-    def IS_CHANGED(cls, **kwargs):
-        return f"{kwargs.get('prompt', '')}-{kwargs.get('temperature', 0.5)}-{kwargs.get('top_p', 0.85)}-{kwargs.get('seed', 69)}-{kwargs.get('aspect_ratio', '1:1')}-{kwargs.get('model', 'gemini-3-pro-image-preview')}-{kwargs.get('image_1')}-{kwargs.get('image_2')}-{kwargs.get('image_3')}-{kwargs.get('image_4')}-{kwargs.get('image_5')}"
+    def IS_CHANGED(cls, seed, **kwargs):
+        return seed
 
 NODE_CLASS_MAPPINGS = {"NanoBananaNode": NanoBananaNode}
 NODE_DISPLAY_NAME_MAPPINGS = {"NanoBananaNode": "Nano Banana"}
