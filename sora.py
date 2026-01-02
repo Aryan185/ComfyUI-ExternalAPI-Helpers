@@ -6,13 +6,13 @@ import av
 from PIL import Image
 from openai import OpenAI
 
-class Sora:
+class SoraGen:
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
                 "prompt": ("STRING", {"multiline": True, "default": "A calico cat playing a piano on stage"}),
-                "openai_api_key": ("STRING", {"multiline": False, "default": ""}),
+                "api_key": ("STRING", {"multiline": False, "default": ""}),
                 "model": (["sora-2", "sora-2-pro"], {"default": "sora-2"}),
                 "size": (["720x1280", "1280x720", "1024x1792", "1792x1024"], {"default": "1280x720"}),
                 "duration": (["4", "8", "12"], {"default": "4"}),
@@ -23,8 +23,8 @@ class Sora:
 
     RETURN_TYPES = ("IMAGE", "AUDIO")
     RETURN_NAMES = ("frames", "audio")
-    FUNCTION = "gen_video"
-    CATEGORY = "OpenAI/Video"
+    FUNCTION = "generate_video"
+    CATEGORY = "video/generation"
     OUTPUT_IS_LIST = (True, False)
 
     def gen_video(self, prompt, openai_api_key, model, size, duration, seed, input_image=None):
@@ -83,5 +83,5 @@ class Sora:
             if img_buf:
                 img_buf.close()
 
-NODE_CLASS_MAPPINGS = {"Sora": Sora}
-NODE_DISPLAY_NAME_MAPPINGS = {"Sora": "Sora 2 (OpenAI)"}
+NODE_CLASS_MAPPINGS = {"SoraGen": SoraGen}
+NODE_DISPLAY_NAME_MAPPINGS = {"SoraGen": "Sora 2 (OpenAI)"}
