@@ -11,6 +11,7 @@ from typing import Optional
 from google import genai
 from google.genai import types
 import cv2
+import av
 
 
 class VeoVertexVideoGenerator:    
@@ -47,6 +48,8 @@ class VeoVertexVideoGenerator:
                 "aspect_ratio": (["16:9", "9:16"], {"default": "16:9"}),
                 "duration_seconds": ("INT", {"default": 4, "min": 4, "max": 8, "step": 1}),
                 "seed": ("INT", {"default": 69, "min": 1, "max": 2147483646, "step": 1}),
+                "generate_audio": ("BOOLEAN", {"default": False}),
+                "fps": (["24"], {"default": "24"}),
             },
             "optional": {
                 "negative_prompt": ("STRING", {"multiline": True, "default": ""}),
@@ -55,11 +58,11 @@ class VeoVertexVideoGenerator:
             }
         }
     
-    RETURN_TYPES = ("IMAGE",)
-    RETURN_NAMES = ("frames",)
+    RETURN_TYPES = ("IMAGE", "AUDIO")
+    RETURN_NAMES = ("frames", "audio")
     FUNCTION = "generate_video"
     CATEGORY = "video/generation"
-    OUTPUT_IS_LIST = (True,)
+    OUTPUT_IS_LIST = (True, False)
     
     def setup_client(self, service_account_json, project_id, location):
         """Setup Vertex AI client with service account JSON content"""
@@ -126,6 +129,49 @@ class VeoVertexVideoGenerator:
             if os.path.exists(temp_video_path):
                 os.remove(temp_video_path)
     
+    def extract_audio_from_video(self, video_bytes):
+        temp_video_path = os.path.join(tempfile.gettempdir(), f"temp_video_audio_{uuid.uuid4().hex}.mp4")
+        
+        try:
+            with open(temp_video_path, 'wb') as f:
+                f.write(video_bytes)
+            
+            container = av.open(temp_video_path)            
+            if not container.streams.audio:
+                print("Warning: No audio track found in video.")
+                container.close()
+                return None
+            
+            audio_stream = container.streams.audio[0]
+            audio_frames = [frame.to_ndarray() for frame in container.decode(audio=0)]
+            container.close()
+            
+            if not audio_frames:
+                print("Warning: No audio frames extracted.")
+                return None
+            
+            audio_array = np.concatenate(audio_frames, axis=1)
+            
+            # Normalize based on dtype
+            if audio_array.dtype == np.int16:
+                waveform = torch.from_numpy(audio_array).float() / 32768.0
+            elif audio_array.dtype == np.int32:
+                waveform = torch.from_numpy(audio_array).float() / 2147483648.0
+            else:
+                waveform = torch.from_numpy(audio_array).float()
+            
+            return {"waveform": waveform.unsqueeze(0), "sample_rate": audio_stream.rate}
+            
+        except Exception as e:
+            print(f"Warning: Failed to extract audio: {str(e)}")
+            return None
+        finally:
+            if os.path.exists(temp_video_path):
+                try:
+                    os.remove(temp_video_path)
+                except:
+                    pass
+    
     def tensor_to_image_bytes(self, image_tensor):
         """Convert ComfyUI image tensor to bytes"""
         img_array = image_tensor.cpu().numpy() if isinstance(image_tensor, torch.Tensor) else image_tensor
@@ -142,7 +188,7 @@ class VeoVertexVideoGenerator:
     
     def generate_video(self, prompt: str, project_id: str, location: str, 
                       service_account: str, model: str, resolution: str, aspect_ratio: str, 
-                      duration_seconds: int, seed: int,
+                      duration_seconds: int, seed: int, generate_audio: bool, fps: str,
                       negative_prompt: Optional[str] = None, 
                       first_frame: Optional[torch.Tensor] = None,
                       last_frame: Optional[torch.Tensor] = None):
@@ -155,6 +201,8 @@ class VeoVertexVideoGenerator:
             "resolution": resolution,
             "aspect_ratio": aspect_ratio,
             "duration_seconds": duration_seconds,
+            "generate_audio": generate_audio,
+            "fps": int(fps),
         }
         
         if seed != -1:
@@ -191,7 +239,6 @@ class VeoVertexVideoGenerator:
             setattr(video_config, 'last_frame', last_frame_img)
             print("Last frame image provided for video generation")
         
-        print(f"Starting video generation with model {model}...")
         operation = client.models.generate_videos(**generation_params)
         print(f"Operation started: {operation.name}")
         
@@ -203,24 +250,23 @@ class VeoVertexVideoGenerator:
             print(".", end="", flush=True)
         print("")
         
-        # Check for errors
         if operation.error:
             raise Exception(f"Operation failed: {operation.error}")
         
-        # Retrieve video
         if not operation.result or not operation.result.generated_videos:
             raise Exception("No videos were generated.")
         
         video_result = operation.result.generated_videos[0].video
-        
         if not video_result.video_bytes:
             raise Exception("No video bytes returned from API")
         
-        print("Video generated successfully. Extracting frames...")
         frames_tensor = self.video_to_frames(video_result.video_bytes)
-        print(f"Extracted {frames_tensor.shape[0]} frames.")
         
-        return ([frames_tensor],)
+        audio_output = None
+        if generate_audio:
+            audio_output = self.extract_audio_from_video(video_result.video_bytes)
+        
+        return ([frames_tensor], audio_output)
 
 
 NODE_CLASS_MAPPINGS = {

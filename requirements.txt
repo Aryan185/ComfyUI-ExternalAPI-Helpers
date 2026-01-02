@@ -6,3 +6,4 @@ google-genai
 opencv-python
 soundfile
 openai
+av
