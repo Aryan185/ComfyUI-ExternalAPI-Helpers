@@ -16,9 +16,9 @@ class GeminiSegmentationNode:
             "required": {
                 "image": ("IMAGE",),
                 "segment_prompt": ("STRING", {"default": "all objects", "multiline": True}),
-                "model": ("STRING", {"default": "gemini-2.5-flash", "multiline": False}),
+                "model": (["gemini-robotics-er-1.5-preview", "gemini-2.5-flash-lite", "gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash-lite", "gemini-2.0-flash"], {"default": "gemini-robotics-er-1.5-preview"}),                
                 "temperature": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 2.0, "step": 0.1}),
-                "thinking": ("BOOLEAN", {"default": True}),
+                "thinking": ("BOOLEAN", {"default": False}),
                 "seed": ("INT", {"default": 69, "min": -1, "max": 2147483646, "step": 1}),
                 "api_key": ("STRING", {"default": "", "multiline": False})
             },
