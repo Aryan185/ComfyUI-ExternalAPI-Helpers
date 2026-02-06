@@ -48,7 +48,7 @@ class ElevenLabsTTSNode:
                 "style": ("FLOAT", {"default": 0.50, "min": 0.0, "max": 1.0, "step": 0.01}),
                 "use_speaker_boost": ("BOOLEAN", {"default": True}),
                 "seed": ("INT", {"default": 40, "min": 0, "max": 4294967294}),
-                "api_key": ("STRING", {"multiline": False, "default": ""}),
+                "api_key": ("STRING", {"multiline": False, "default": "", "tooltip": "Directly put ElevenLabs API key or .env variable name (XI_API_KEY)"}),
             },
             "optional": {
                 "previous_text": ("STRING", {"multiline": True, "default": ""}),
@@ -68,7 +68,7 @@ class ElevenLabsTTSNode:
         if not text.strip():
             raise ValueError("Text input cannot be empty.")
         
-        key = api_key.strip() or os.environ.get("XI_API_KEY")
+        key = os.environ.get(api_key.strip(), api_key.strip()) or os.environ.get("XI_API_KEY")
         if not key:
             raise ValueError("No API key provided.")
         

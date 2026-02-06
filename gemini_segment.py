@@ -20,10 +20,10 @@ class GeminiSegmentationNode:
                 "temperature": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 2.0, "step": 0.1}),
                 "thinking": ("BOOLEAN", {"default": False}),
                 "seed": ("INT", {"default": 69, "min": -1, "max": 2147483646, "step": 1}),
-                "api_key": ("STRING", {"default": "", "multiline": False})
+                "api_key": ("STRING", {"default": "", "multiline": False, "tooltip": "Directly put Gemini API key or .env variable name (GEMINI_API_KEY)"})
             },
             "optional": {
-                "thinking_budget": ("INT", {"default": 0, "min": -1, "max": 24576, "step": 1}),
+                "thinking_budget": ("INT", {"default": 0, "min": -1, "max": 24576, "step": 1, "tooltip": "-1 = auto, 0 = disabled"}),
             }
         }
     
@@ -33,7 +33,7 @@ class GeminiSegmentationNode:
     CATEGORY = "image/generation"
     
     def generate_segmentation(self, image, segment_prompt, model, temperature, thinking, seed, api_key, thinking_budget=0):
-        key = api_key.strip() or os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+        key = os.environ.get(api_key.strip(), api_key.strip()) or os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
         if not key: raise ValueError("API Key missing")
         client = genai.Client(api_key=key, http_options={'api_version': 'v1beta'})
         

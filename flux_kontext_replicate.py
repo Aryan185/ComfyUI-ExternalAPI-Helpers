@@ -13,7 +13,7 @@ class FluxKontextReplicate:
             "required": {
                 "image": ("IMAGE",),
                 "prompt": ("STRING", {"multiline": True, "default": "Make this a 90s cartoon"}),
-                "api_key": ("STRING", {"default": ""}),
+                "api_key": ("STRING", {"default": "", "tooltip": "Directly put Replicate API token or .env variable name (REPLICATE_API_TOKEN)"}),
                 "model": (["flux-kontext-dev", "flux-kontext-max", "flux-kontext-pro"], {"default": "flux-kontext-dev"}),
                 "aspect_ratio": (["1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "5:4", "4:5", "21:9", "9:21", "2:1", "1:2", "match_input_image"], {"default": "match_input_image"}),
                 "output_format": (["jpg", "png"], {"default": "jpg"}),
@@ -30,7 +30,7 @@ class FluxKontextReplicate:
     
     def generate_image(self, image, prompt, api_key, model, aspect_ratio, output_format, safety_tolerance, seed, prompt_upsampling):
         try:
-            os.environ["REPLICATE_API_TOKEN"] = api_key
+            os.environ["REPLICATE_API_TOKEN"] = os.environ.get(api_key.strip(), api_key.strip()) or os.environ.get("REPLICATE_API_TOKEN", "")
             
             # Convert tensor to PIL and save to buffer
             tensor = image.squeeze(0) if len(image.shape) == 4 else image

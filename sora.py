@@ -12,7 +12,7 @@ class SoraGen:
         return {
             "required": {
                 "prompt": ("STRING", {"multiline": True, "default": "A calico cat playing a piano on stage"}),
-                "api_key": ("STRING", {"multiline": False, "default": ""}),
+                "api_key": ("STRING", {"multiline": False, "default": "", "tooltip": "Directly put OpenAI API key or .env variable name (OPENAI_API_KEY)"}),
                 "model": (["sora-2", "sora-2-pro"], {"default": "sora-2"}),
                 "size": (["720x1280", "1280x720", "1024x1792", "1792x1024"], {"default": "1280x720"}),
                 "duration": (["4", "8", "12"], {"default": "4"}),
@@ -28,7 +28,9 @@ class SoraGen:
     OUTPUT_IS_LIST = (True, False)
 
     def generate_video(self, prompt, api_key, model, size, duration, seed, input_image=None):
-        client = OpenAI(api_key=api_key)
+        key = os.environ.get(api_key.strip(), api_key.strip()) or os.environ.get("OPENAI_API_KEY")
+        if not key: raise ValueError("No API key provided.")
+        client = OpenAI(api_key=key)
         api_args = {"prompt": prompt, "model": model, "size": size, "seconds": duration}
         
         img_buf = None

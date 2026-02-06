@@ -9,7 +9,7 @@ class GeminiTTSNode:
         return {
             "required": {
                 "text": ("STRING", {"multiline": True, "default": ""}),
-                "api_key": ("STRING", {"multiline": False, "default": ""}),
+                "api_key": ("STRING", {"multiline": False, "default": "", "tooltip": "Directly put Gemini API key or .env variable name (GEMINI_API_KEY)"}),
                 "model": (["gemini-2.5-flash-preview-tts", "gemini-2.5-pro-preview-tts"],),
                 "voice_id": (["Zephyr", "Puck", "Charon", "Kore", "Fenrir", "Leda", "Orus", "Aoede", "Callirrhoe", "Autonoe", "Enceladus", "Iapetus", "Umbriel", "Algieba", "Despina", "Erinome", "Achernar", "Laomedeia", "Rasalgethi", "Algenib", "Achird", "Pulcherrima", "Gacrux", "Schedar", "Alnilam", "Sulafat", "Sadaltager", "Sadachbia", "Vindemiatrix", "Zubenelgenubi"],),                
                 "seed": ("INT", {"default": 69, "min": -1, "max": 2147483646, "step": 1}),
@@ -30,7 +30,7 @@ class GeminiTTSNode:
         if not text.strip():
             raise ValueError("Text input cannot be empty.")
         
-        key = api_key.strip() or os.environ.get("GEMINI_API_KEY")
+        key = os.environ.get(api_key.strip(), api_key.strip()) or os.environ.get("GEMINI_API_KEY")
         if not key:
             raise ValueError("No API key provided.")
         

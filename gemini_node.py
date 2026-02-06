@@ -17,11 +17,11 @@ class GeminiChatNode:
                 "temperature": ("FLOAT", {"default": 0.2, "min": 0.0, "max": 2.0, "step": 0.1}),
                 "thinking": ("BOOLEAN", {"default": False}),
                 "seed": ("INT", {"default": 69, "min": -1, "max": 2147483646, "step": 1}),
-                "api_key": ("STRING", {"default": "", "multiline": False})
+                "api_key": ("STRING", {"default": "", "multiline": False, "tooltip": "Directly put Gemini API key or .env variable name (GEMINI_API_KEY)"})
             },
             "optional": {
                 "system_instruction": ("STRING", {"multiline": True, "default": ""}),
-                "thinking_budget": ("INT", {"default": 0, "min": -1, "max": 24576, "step": 1}),
+                "thinking_budget": ("INT", {"default": 0, "min": -1, "max": 24576, "step": 1, "tooltip": "-1 = auto, 0 = disabled"}),
                 "image": ("IMAGE",),
                 "audio": ("AUDIO",),
             }
@@ -35,7 +35,7 @@ class GeminiChatNode:
     def generate(self, prompt, model, temperature, thinking, seed, api_key,
                  system_instruction=None, thinking_budget=-1, image=None, audio=None):   
 
-        key = api_key.strip() or os.environ.get("GEMINI_API_KEY")
+        key = os.environ.get(api_key.strip(), api_key.strip()) or os.environ.get("GEMINI_API_KEY")
         if not key: raise ValueError("Error: No API key provided.")
         
         client = genai.Client(api_key=key, http_options={'api_version': 'v1beta'})

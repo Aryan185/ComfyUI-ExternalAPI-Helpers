@@ -16,18 +16,18 @@ class GeminiDiarisationAPI:
                 "audio": ("AUDIO",),
                 "num_speakers": ("INT", {"default": 2, "min": 1, "max": 10, "step": 1}),
                 "model": ("STRING", {"default": "gemini-2.5-flash", "multiline": False}),
-                "api_key": ("STRING", {"default": "", "multiline": False}),
+                "api_key": ("STRING", {"default": "", "multiline": False, "tooltip": "Directly put Gemini API key or .env variable name (GEMINI_API_KEY)"}),
                 "seed": ("INT", {"default": 69, "min": 0, "max": 2147483646, "step": 1}),
                 "temperature": ("FLOAT", {"default": 0.2, "min": 0.0, "max": 2.0, "step": 0.1})
             },
             "optional": {
                 "thinking": ("BOOLEAN", {"default": False}),
-                "thinking_budget": ("INT", {"default": 1024, "min": 0, "max": 24576, "step": 1}),
+                "thinking_budget": ("INT", {"default": 1024, "min": 0, "max": 24576, "step": 1, "tooltip": "-1 = auto, 0 = disabled, 1+ = token budget"}),
             }
         }
     
-    RETURN_TYPES = ("AUDIO", "AUDIO", "AUDIO", "AUDIO", "STRING")
-    RETURN_NAMES = ("speaker_1", "speaker_2", "speaker_3", "speaker_4", "json")
+    RETURN_TYPES = ("AUDIO", "AUDIO", "AUDIO", "AUDIO")
+    RETURN_NAMES = ("speaker_1", "speaker_2", "speaker_3", "speaker_4")
     FUNCTION = "diarise"
     CATEGORY = "audio/diarise"
     
@@ -64,7 +64,7 @@ class GeminiDiarisationAPI:
             w.writeframes((audio_np * 32767).astype(np.int16).tobytes())
 
         # 2. Setup Client
-        key = api_key.strip() or os.environ.get("GEMINI_API_KEY")
+        key = os.environ.get(api_key.strip(), api_key.strip()) or os.environ.get("GEMINI_API_KEY")
         if not key: raise ValueError("API Key missing")
         client = genai.Client(api_key=key, http_options={'api_version': 'v1beta'})
 
@@ -149,7 +149,6 @@ class GeminiDiarisationAPI:
             tensor = torch.from_numpy(track).float().unsqueeze(0).unsqueeze(0)
             outputs.append({"waveform": tensor, "sample_rate": sr})
 
-        outputs.append(json.dumps(result, indent=2))
         return tuple(outputs)
 
 NODE_CLASS_MAPPINGS = {"GeminiDiarisationAPI": GeminiDiarisationAPI}

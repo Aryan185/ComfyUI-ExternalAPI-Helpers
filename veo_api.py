@@ -17,7 +17,7 @@ class VeoGeminiVideoGenerator:
                 "model": (["veo-2.0-generate-001"], {"default": "veo-2.0-generate-001"}),
                 "aspect_ratio": (["16:9", "9:16"], {"default": "16:9"}),
                 "duration_seconds": ("INT", {"default": 8, "min": 5, "max": 8, "step": 1}),
-                "api_key": ("STRING", {"default": "", "multiline": False}),
+                "api_key": ("STRING", {"default": "", "multiline": False, "tooltip": "Directly put Gemini API key or .env variable name (GEMINI_API_KEY)"}),
                 "seed": ("INT", {"default": 69, "min": -1, "max": 2147483646, "step": 1}),
             },
             "optional": {
@@ -36,7 +36,7 @@ class VeoGeminiVideoGenerator:
                       negative_prompt=None, image=None):
         
         # 1. Setup Client
-        key = api_key.strip() or os.environ.get("GEMINI_API_KEY")
+        key = os.environ.get(api_key.strip(), api_key.strip()) or os.environ.get("GEMINI_API_KEY")
         if not key: raise ValueError("API Key required")
         client = genai.Client(http_options={"api_version": "v1beta"}, api_key=key)
 

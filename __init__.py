@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from .flux_kontext_replicate import NODE_CLASS_MAPPINGS as PRO_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as PRO_DISPLAY
 from .gemini_node import NODE_CLASS_MAPPINGS as GEMINI_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as GEMINI_DISPLAY
 from .gemini_diarisation import NODE_CLASS_MAPPINGS as GEMINI_DIAR_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as GEMINI_DIAR_DISPLAY

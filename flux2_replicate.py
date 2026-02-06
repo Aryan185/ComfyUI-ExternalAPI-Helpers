@@ -12,7 +12,7 @@ class Flux2Replicate:
         return {
             "required": {
                 "prompt": ("STRING", {"multiline": True, "default": "A beautiful landscape"}),
-                "api_key": ("STRING", {"default": ""}),
+                "api_key": ("STRING", {"default": "", "tooltip": "Directly put Replicate API token or .env variable name (REPLICATE_API_TOKEN)"}),
                 "model": (["flux-2-max", "flux-2-pro", "flux-2-dev"], {"default": "flux-2-max"}),
                 "aspect_ratio": (["1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "5:4", "4:5", "21:9", "9:21", "2:1", "1:2"], {"default": "1:1"}),
                 "output_format": (["webp", "jpg", "png"], {"default": "webp"}),
@@ -49,7 +49,7 @@ class Flux2Replicate:
     def generate_image(self, prompt, api_key, model, aspect_ratio, output_format, output_quality, 
                       image_1=None, image_2=None, image_3=None, image_4=None, image_5=None):
         try:
-            os.environ["REPLICATE_API_TOKEN"] = api_key
+            os.environ["REPLICATE_API_TOKEN"] = os.environ.get(api_key.strip(), api_key.strip()) or os.environ.get("REPLICATE_API_TOKEN", "")
             
             input_images = []
             for img in [image_1, image_2, image_3, image_4, image_5]:
@@ -68,7 +68,7 @@ class Flux2Replicate:
             
             # Add safety_tolerance for models that support it (flux-2-max and flux-2-pro)
             if model in ["flux-2-max", "flux-2-pro"]:
-                replicate_input["safety_tolerance"] = 0
+                replicate_input["safety_tolerance"] = 1
             
             # Run Replicate model
             output = replicate.run(

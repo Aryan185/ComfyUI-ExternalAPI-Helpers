@@ -12,7 +12,7 @@ class GoogleImagenNode:
         return {
             "required": {
                 "prompt": ("STRING", {"multiline": True}),
-                "api_key": ("STRING", {"multiline": False, "default": ""}),
+                "api_key": ("STRING", {"multiline": False, "default": "", "tooltip": "Directly put Gemini API key or .env variable name (GEMINI_API_KEY)"}),
                 "model": (["models/imagen-4.0-ultra-generate-001", "models/imagen-4.0-generate-001", "models/imagen-4.0-fast-generate-001", "models/imagen-3.0-generate-002"],),
                 "number_of_images": ("INT", {"default": 1, "min": 1, "max": 4, "step": 1}),
                 "aspect_ratio": (["1:1", "9:16", "16:9", "4:3", "3:4"],),
@@ -31,7 +31,7 @@ class GoogleImagenNode:
     CATEGORY = "image/generation"
     
     def generate_images(self, prompt, api_key, model, number_of_images, aspect_ratio, image_size, seed, guidance_scale, negative_prompt=""):
-        key = api_key.strip() or os.environ.get("GEMINI_API_KEY")
+        key = os.environ.get(api_key.strip(), api_key.strip()) or os.environ.get("GEMINI_API_KEY")
         if not key: raise ValueError("No API key provided.")
         
         client = genai.Client(api_key=key)

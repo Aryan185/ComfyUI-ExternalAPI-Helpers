@@ -29,7 +29,7 @@ class VeoVertexVideoGenerator:
                     "asia-southeast2", "australia-southeast1", "australia-southeast2", 
                     "me-central1", "me-central2", "me-west1"
                 ], {"default": "us-central1"}),
-                "service_account": ("STRING", {"multiline": True, "default": ""}),
+                "service_account": ("STRING", {"multiline": True, "default": "", "tooltip": "Paste service account JSON content"}),
                 "model": ([
                     "veo-2.0-generate-001", "veo-2.0-generate-exp", "veo-2.0-generate-preview",
                     "veo-3.0-generate-001", "veo-3.0-fast-generate-001", 

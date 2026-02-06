@@ -16,7 +16,7 @@ class OpenAILLMNode:
                 "model": (["gpt-4.1","gpt-4.1-mini","gpt-5","gpt-5.2","gpt-5-mini","gpt-5-nano","gpt-5.2-pro","o1","o3-mini"],),
                 "temperature": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 2.0, "step": 0.01}),
                 "reasoning_effort": (["low", "medium", "high"],),
-                "api_key": ("STRING", {"multiline": False, "default": ""}),
+                "api_key": ("STRING", {"multiline": False, "default": "", "tooltip": "Directly put OpenAI API key or .env variable name (OPENAI_API_KEY)"}),
                 "max_output_tokens": ("INT", {"default": 16384, "min": 1, "max": 32768, "step": 1})
             },
             "optional": {
@@ -36,7 +36,7 @@ class OpenAILLMNode:
         if not prompt.strip():
             raise ValueError("Prompt cannot be empty.")
         
-        key = api_key.strip() or os.environ.get("OPENAI_API_KEY")
+        key = os.environ.get(api_key.strip(), api_key.strip()) or os.environ.get("OPENAI_API_KEY")
         if not key:
             raise ValueError("No API key provided.")
         

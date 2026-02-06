@@ -13,7 +13,7 @@ class NanoBananaNode:
         return {
             "required": {
                 "prompt": ("STRING", {"multiline": True, "default": ""}),
-                "api_key": ("STRING", {"multiline": False, "default": ""}),
+                "api_key": ("STRING", {"multiline": False, "default": "", "tooltip": "Directly put Gemini API key or .env variable name (GEMINI_API_KEY)"}),
                 "model": (["gemini-3-pro-image-preview", "gemini-2.5-flash-image"],),
                 "aspect_ratio": (["1:1", "2:3", "3:2", "3:4", "4:3", "9:16", "16:9", "21:9"],),
                 "resolution": (["1K", "2K", "4K"], {"default": "1K"}),
@@ -48,7 +48,7 @@ class NanoBananaNode:
     def generate(self, api_key, model, aspect_ratio, resolution, temperature, top_p, seed,
                  prompt="", system_instruction="", **kwargs):
         
-        key = api_key.strip() or os.environ.get("GEMINI_API_KEY")
+        key = os.environ.get(api_key.strip(), api_key.strip()) or os.environ.get("GEMINI_API_KEY")
         if not key:
             raise ValueError("No API key provided.")
         

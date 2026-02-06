@@ -36,7 +36,7 @@ class OpenAITTSNode:
                     "pcm"
                 ],),
                 "speed": ("FLOAT", {"default": 1.0, "min": 0.25, "max": 4.0, "step": 0.01}),
-                "api_key": ("STRING", {"multiline": False, "default": ""}),
+                "api_key": ("STRING", {"multiline": False, "default": "", "tooltip": "Directly put OpenAI API key or .env variable name (OPENAI_API_KEY)"}),
             },
             "optional": {
                 "instructions": ("STRING", {"multiline": True, "default": ""}),
@@ -53,7 +53,7 @@ class OpenAITTSNode:
         if not text.strip():
             raise ValueError("Text input cannot be empty.")
         
-        key = api_key.strip() or os.environ.get("OPENAI_API_KEY")
+        key = os.environ.get(api_key.strip(), api_key.strip()) or os.environ.get("OPENAI_API_KEY")
         if not key:
             raise ValueError("No API key provided. Set OPENAI_API_KEY environment variable or provide it in the node.")
         

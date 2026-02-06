@@ -15,7 +15,7 @@ class GPTImageEditNode:
                 "image_1": ("IMAGE",),
                 "model": (["gpt-image-1", "gpt-image-1-mini", "gpt-image-1.5"],),
                 "prompt": ("STRING", {"multiline": True, "default": "Edit this image"}),
-                "api_key": ("STRING", {"multiline": False, "default": ""}),
+                "api_key": ("STRING", {"multiline": False, "default": "", "tooltip": "Directly put OpenAI API key or .env variable name (OPENAI_API_KEY)"}),
                 "background": (["auto", "transparent", "opaque"], {"default": "auto"}),
                 "quality": (["auto", "high", "medium", "low"], {"default": "auto"}),
                 "size": (["auto", "1024x1024", "1536x1024", "1024x1536"], {"default": "auto"}),
@@ -56,7 +56,7 @@ class GPTImageEditNode:
     def edit_image(self, image_1, model, prompt, api_key, background, quality, size, 
                    output_format, output_compression, n_images, mask=None, **kwargs):
         
-        key = api_key.strip() or os.environ.get("OPENAI_API_KEY")
+        key = os.environ.get(api_key.strip(), api_key.strip()) or os.environ.get("OPENAI_API_KEY")
         if not key:
             raise ValueError("GPT Image Edit: No API Key provided.")
 

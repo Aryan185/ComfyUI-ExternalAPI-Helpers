@@ -19,7 +19,7 @@ class GoogleImagenEditNode:
                 "prompt": ("STRING", {"multiline": True, "default": "Edit this image"}),
                 "project_id": ("STRING", {"multiline": False, "default": ""}),
                 "location": (["global", "us-central1", "us-east1", "us-east4", "us-east5", "us-south1", "us-west1", "us-west2", "us-west3", "us-west4", "northamerica-northeast1", "northamerica-northeast2", "southamerica-east1", "southamerica-west1", "africa-south1", "europe-west1", "europe-north1", "europe-west2", "europe-west3", "europe-west4", "europe-west6", "europe-west8", "europe-west9", "europe-west12", "europe-southwest1", "europe-central2", "asia-east1", "asia-east2", "asia-northeast1", "asia-northeast2", "asia-northeast3", "asia-south1", "asia-south2", "asia-southeast1", "asia-southeast2", "australia-southeast1", "australia-southeast2", "me-central1", "me-central2", "me-west1"], {"default": "us-central1"}),
-                "service_account": ("STRING", {"multiline": True, "default": ""}),
+                "service_account": ("STRING", {"multiline": True, "default": "", "tooltip": "Paste service account JSON content"}),
                 "edit_mode": (["EDIT_MODE_INPAINT_INSERTION", "EDIT_MODE_INPAINT_REMOVAL", "EDIT_MODE_OUTPAINT", "EDIT_MODE_BGSWAP"], {"default": "EDIT_MODE_INPAINT_INSERTION"}),
                 "number_of_images": ("INT", {"default": 1, "min": 1, "max": 4, "step": 1}),
                 "seed": ("INT", {"default": 69, "min": 1, "max": 2147483646, "step": 1}),
