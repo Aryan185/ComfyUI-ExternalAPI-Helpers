@@ -17,6 +17,8 @@ A collection of powerful custom nodes for ComfyUI that connect your local workfl
 *   **Veo Video Generator:** Generate high-quality video clips from text prompts using Google's Veo model via Vertex AI or the Gemini API.
 *   **ElevenLabs TTS:** Generate high-quality speech from text using ElevenLabs' diverse range of voices and models.
 *   **Gemini TTS:** Create speech from text using Google's Gemini models.
+*   **Tripo Text-to-3D:** Generate 3D models from text prompts using Tripo AI's advanced 3D generation API.
+*   **Tripo Image-to-3D:** Convert images into detailed 3D models using Tripo AI's image-to-model capability.
 
 ---
 
@@ -49,6 +51,7 @@ All nodes in this collection require API keys to function.
 *   **Gemini, Imagen, Nano Banana, Gemini TTS, Gemini Diarization, and Veo (Gemini API) Nodes:** You will need a [Google AI Studio API Key](https://aistudio.google.com/app/api-keys).
 *   **OpenAI Nodes (GPT Image Edit, OpenAI LLM, OpenAI TTS):** You will need an [OpenAI API Key](https://platform.openai.com/api-keys).
 *   **ElevenLabs TTS Node:** You will need an [ElevenLabs API Key](https://elevenlabs.io/).
+*   **Tripo Nodes (Text-to-3D, Image-to-3D):** You will need a [Tripo API Key](https://tripo3d.ai/).
 *   **Vertex AI Nodes (Imagen Edit, Veo Vertex AI):** You will need a Google Cloud Project ID, a service account with appropriate permissions, and the location for the resources.
 
 You can paste your key directly into the `api_key` field on the corresponding node. For Vertex AI nodes, you will need to provide the project ID, location, and paste your service account JSON content.
@@ -64,6 +67,7 @@ Instead of pasting API keys directly into nodes, you can store them in a `.env` 
    OPENAI_API_KEY=your_openai_key_here
    XI_API_KEY=your_elevenlabs_key_here
    REPLICATE_API_TOKEN=your_replicate_token_here
+   TRIPO_API_KEY=your_tripo_api_key_here
    ```
 3. In the node's `api_key` field, enter the variable name (e.g., `GEMINI_API_KEY`) instead of the actual key
 
@@ -194,6 +198,24 @@ Generate speech using Google's Gemini TTS models.
 *   **Category:** `audio/generation`
 *   **Key Inputs:** `text`, `voice_id`, `system_prompt` (optional)
 *   **Output:** `audio`
+
+### Tripo Text-to-3D
+
+Generate high-quality 3D models from text prompts using Tripo AI's powerful generation engine.
+
+*   **Category:** `3D/generation`
+*   **Key Inputs:** `prompt`, `model_version` (v3.0, v2.5, v2.0, v1.4, Turbo), `texture_quality` (standard/detailed), `save_name`
+*   **Optional Inputs:** `seed`, `face_limit` (500-100000, default 20000), `texture_size` (512/1024/2048), `pbr` (realistic lighting), `negative_prompt`
+*   **Output:** `glb` (3D model file)
+
+### Tripo Image-to-3D
+
+Convert images into detailed 3D models using Tripo AI's advanced image-to-model technology.
+
+*   **Category:** `3D/generation`
+*   **Key Inputs:** `image`, `model_version` (v3.0, v2.5, v2.0, v1.4), `texture_quality` (standard/detailed), `save_name`
+*   **Optional Inputs:** `seed`, `texture_seed` (randomness of colors/textures), `face_limit` (500-100000, default 20000), `texture_size` (512/1024/2048), `pbr` (realistic lighting)
+*   **Output:** `glb` (3D model file)
 
 
 ##  Acknowledgements
