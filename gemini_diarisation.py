@@ -15,7 +15,7 @@ class GeminiDiarisationAPI:
             "required": {
                 "audio": ("AUDIO",),
                 "num_speakers": ("INT", {"default": 2, "min": 1, "max": 10, "step": 1}),
-                "model": ("STRING", {"default": "gemini-2.5-flash", "multiline": False}),
+                "model": (["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.5-flash-lite", "gemini-3-pro-preview", "gemini-3.1-pro-preview", "gemini-3-flash-preview", "gemini-3.1-flash-lite-preview", "gemini-flash-latest", "gemini-flash-lite-latest", "gemini-2.0-flash", "gemini-2.0-flash-lite"], {"default": "gemini-2.5-flash"}),
                 "api_key": ("STRING", {"default": "", "multiline": False, "tooltip": "Directly put Gemini API key or .env variable name (GEMINI_API_KEY)"}),
                 "seed": ("INT", {"default": 69, "min": 0, "max": 2147483646, "step": 1}),
                 "temperature": ("FLOAT", {"default": 0.2, "min": 0.0, "max": 2.0, "step": 0.1})

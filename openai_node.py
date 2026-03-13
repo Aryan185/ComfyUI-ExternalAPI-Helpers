@@ -13,7 +13,7 @@ class OpenAILLMNode:
         return {
             "required": {
                 "prompt": ("STRING", {"multiline": True, "default": ""}),
-                "model": (["gpt-4.1","gpt-4.1-mini","gpt-5","gpt-5.2","gpt-5-mini","gpt-5-nano","gpt-5.2-pro","o1","o3-mini"],),
+                "model": (["gpt-5.4", "gpt-5.4-pro", "gpt-4.1", "gpt-4.1-mini", "gpt-5", "gpt-5.2", "gpt-5-mini", "gpt-5-nano", "gpt-5.2-pro", "o1", "o3-mini"],),
                 "temperature": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 2.0, "step": 0.01}),
                 "reasoning_effort": (["low", "medium", "high"],),
                 "api_key": ("STRING", {"multiline": False, "default": "", "tooltip": "Directly put OpenAI API key or .env variable name (OPENAI_API_KEY)"}),
