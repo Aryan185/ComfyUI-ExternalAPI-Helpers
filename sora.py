@@ -4,6 +4,7 @@ import torch
 import numpy as np
 import av
 from PIL import Image
+import os
 from openai import OpenAI
 
 class SoraGen:
