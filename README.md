@@ -11,6 +11,7 @@ A collection of powerful custom nodes for ComfyUI that connect your local workfl
 *   **Gemini Speaker Diarization:** Separate audio into different speaker tracks using Gemini.
 *   **GPT Image Edit:** OpenAI's `gpt-image-1` for prompt-based image editing and inpainting. Simply mask an area and describe the change you want to see.
 *   **OpenAI LLM:** Access OpenAI's powerful language models (GPT-4, GPT-5, o1, etc.) for text generation and reasoning.
+*   **Groq LLM:** Fast text generation using Groq-hosted models, with optional image input for supported vision models.
 *   **OpenAI Text-to-Speech:** Generate high-quality speech using OpenAI's TTS models.
 *   **Google Imagen Generator & Edit:** Create and edit images with Google's Imagen models, with support for Vertex AI.
 *   **Nano Banana:** A creative image generation node using a specialized Gemini model.
@@ -50,6 +51,7 @@ All nodes in this collection require API keys to function.
 *   **FLUX Nodes (Replicate):** You will need a [Replicate API Token](https://replicate.com/account/api-tokens).
 *   **Gemini, Imagen, Nano Banana, Gemini TTS, Gemini Diarization, and Veo (Gemini API) Nodes:** You will need a [Google AI Studio API Key](https://aistudio.google.com/app/api-keys).
 *   **OpenAI Nodes (GPT Image Edit, OpenAI LLM, OpenAI TTS):** You will need an [OpenAI API Key](https://platform.openai.com/api-keys).
+*   **Groq LLM Node:** You will need a [Groq API Key](https://console.groq.com/keys).
 *   **ElevenLabs TTS Node:** You will need an [ElevenLabs API Key](https://elevenlabs.io/).
 *   **Tripo Nodes (Text-to-3D, Image-to-3D):** You will need a [Tripo API Key](https://tripo3d.ai/).
 *   **Vertex AI Nodes (Imagen Edit, Veo Vertex AI):** You will need a Google Cloud Project ID, a service account with appropriate permissions, and the location for the resources.
@@ -65,6 +67,7 @@ Instead of pasting API keys directly into nodes, you can store them in a `.env` 
    ```
    GEMINI_API_KEY=your_gemini_key_here
    OPENAI_API_KEY=your_openai_key_here
+   GROQ_API_KEY=your_groq_key_here
    XI_API_KEY=your_elevenlabs_key_here
    REPLICATE_API_TOKEN=your_replicate_token_here
    TRIPO_API_KEY=your_tripo_api_key_here
@@ -133,6 +136,14 @@ Access OpenAI language models (GPT-4, GPT-5, o1, etc.) for text generation.
 
 *   **Category:** `text/generation`
 *   **Key Inputs:** `reasoning_effort` (low/medium/high), `max_output_tokens`, `system_instruction`, `image` (optional)
+*   **Output:** `response` (text)
+
+### Groq LLM
+
+Access Groq-hosted language models for fast text generation, with optional image understanding on supported vision models.
+
+*   **Category:** `text/generation`
+*   **Key Inputs:** `max_completion_tokens`, `reasoning_effort`, `system_instruction`, `image` (optional)
 *   **Output:** `response` (text)
 
 ### OpenAI Text-to-Speech
