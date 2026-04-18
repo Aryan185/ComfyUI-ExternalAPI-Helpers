@@ -12,6 +12,7 @@ A collection of powerful custom nodes for ComfyUI that connect your local workfl
 *   **GPT Image Edit:** OpenAI's `gpt-image-1` for prompt-based image editing and inpainting. Simply mask an area and describe the change you want to see.
 *   **OpenAI LLM:** Access OpenAI's powerful language models (GPT-4, GPT-5, o1, etc.) for text generation and reasoning.
 *   **Groq LLM:** Fast text generation using Groq-hosted models, with optional image input for supported vision models.
+*   **Groq Orpheus TTS:** Generate speech using Groq-hosted Orpheus text-to-speech models.
 *   **OpenAI Text-to-Speech:** Generate high-quality speech using OpenAI's TTS models.
 *   **Google Imagen Generator & Edit:** Create and edit images with Google's Imagen models, with support for Vertex AI.
 *   **Nano Banana:** A creative image generation node using a specialized Gemini model.
@@ -51,7 +52,7 @@ All nodes in this collection require API keys to function.
 *   **FLUX Nodes (Replicate):** You will need a [Replicate API Token](https://replicate.com/account/api-tokens).
 *   **Gemini, Imagen, Nano Banana, Gemini TTS, Gemini Diarization, and Veo (Gemini API) Nodes:** You will need a [Google AI Studio API Key](https://aistudio.google.com/app/api-keys).
 *   **OpenAI Nodes (GPT Image Edit, OpenAI LLM, OpenAI TTS):** You will need an [OpenAI API Key](https://platform.openai.com/api-keys).
-*   **Groq LLM Node:** You will need a [Groq API Key](https://console.groq.com/keys).
+*   **Groq Nodes (LLM, Orpheus TTS):** You will need a [Groq API Key](https://console.groq.com/keys).
 *   **ElevenLabs TTS Node:** You will need an [ElevenLabs API Key](https://elevenlabs.io/).
 *   **Tripo Nodes (Text-to-3D, Image-to-3D):** You will need a [Tripo API Key](https://tripo3d.ai/).
 *   **Vertex AI Nodes (Imagen Edit, Veo Vertex AI):** You will need a Google Cloud Project ID, a service account with appropriate permissions, and the location for the resources.
@@ -146,6 +147,14 @@ Access Groq-hosted language models for fast text generation, with optional image
 *   **Key Inputs:** `max_completion_tokens`, `reasoning_effort`, `system_instruction`, `image` (optional)
 *   **Output:** `response` (text)
 
+### Groq Orpheus TTS
+
+Generate speech using Groq-hosted Orpheus text-to-speech models.
+
+*   **Category:** `audio/generation`
+*   **Key Inputs:** `text`, `voice`, `speed`
+*   **Output:** `audio`
+
 ### OpenAI Text-to-Speech
 
 Generate speech using OpenAI's TTS models.
@@ -229,8 +238,13 @@ Convert images into detailed 3D models using Tripo AI's advanced image-to-model 
 *   **Output:** `glb` (3D model file)
 
 
-##  Acknowledgements
+## Acknowledgements
 
-*   The [ComfyUI](https://github.com/comfyanonymous/ComfyUI) team for creating such a flexible and powerful platform.
-*   [Google](https://deepmind.google/technologies/gemini/), [OpenAI](https://openai.com/), and [Black Forest Labs](https://www.blackforestlabs.ai/) for developing these incredible models.
-*   [Replicate](https://replicate.com/) for providing easy API access to a wide range of models.
+*   The [ComfyUI](https://github.com/comfyanonymous/ComfyUI) team for building the workflow platform that makes these nodes possible.
+*   [Google](https://deepmind.google/technologies/gemini/) for Gemini, Imagen, and Veo.
+*   [OpenAI](https://openai.com/) for GPT models and image and speech APIs.
+*   [Groq](https://groq.com/) for fast inference and hosted text-to-speech support.
+*   [xAI](https://x.ai/) for Grok image generation and editing models.
+*   [Black Forest Labs](https://www.blackforestlabs.ai/) and [Replicate](https://replicate.com/) for FLUX model access.
+*   [ElevenLabs](https://elevenlabs.io/) for speech synthesis.
+*   [Tripo AI](https://www.tripo3d.ai/) for 3D generation APIs.

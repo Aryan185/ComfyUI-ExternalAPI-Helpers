@@ -25,6 +25,7 @@ modules = [
     "tripoImageToModel",
     "grok",
     "groq_node",
+    "groq_orpheus",
 ]
 
 NODE_CLASS_MAPPINGS = {}
