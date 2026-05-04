@@ -22,7 +22,7 @@ class GeminiDiarisationAPI:
             },
             "optional": {
                 "thinking": ("BOOLEAN", {"default": False}),
-                "thinking_budget": ("INT", {"default": 1024, "min": 0, "max": 24576, "step": 1, "tooltip": "-1 = auto, 0 = disabled, 1+ = token budget"}),
+                "thinking_budget": ("INT", {"default": 0, "min": -1, "max": 24576, "step": 1, "tooltip": "-1 = auto, 0 = disabled"}),
             }
         }
     

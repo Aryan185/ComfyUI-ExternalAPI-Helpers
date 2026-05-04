@@ -16,11 +16,11 @@ class GeminiTTSNode:
                 "temperature": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 2.0, "step": 0.01}),
             },
             "optional": {
-                "audio_profile": ("STRING", {"multiline": False, "default": ""}),
                 "style": (["None", "Vocal Smile", "Newscaster", "Whisper", "Empathetic", "Promo/Hype", "Deadpan"], {"default": "None"}),
                 "pace": (["None", "Natural", "Rapid Fire", "The Drift", "Staccato"], {"default": "None"}),
                 "accent": (["None", "Neutral", "American (Gen)", "American (Valley)", "American (South)", "British (RP)", "Transatlantic", "Australian"], {"default": "None"}),
-                "scene": ("STRING", {"multiline": False, "default": ""}),
+                "audio_profile": ("STRING", {"multiline": True, "default": ""}),
+                "scene": ("STRING", {"multiline": True, "default": ""}),
             }
         }
 
