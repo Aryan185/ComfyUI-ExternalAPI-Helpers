@@ -15,7 +15,7 @@ class GeminiDiarisationAPI:
             "required": {
                 "audio": ("AUDIO",),
                 "num_speakers": ("INT", {"default": 2, "min": 1, "max": 10, "step": 1}),
-                "model": (["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.5-flash-lite", "gemini-3-pro-preview", "gemini-3.1-pro-preview", "gemini-3-flash-preview", "gemini-3.1-flash-lite-preview", "gemini-flash-latest", "gemini-flash-lite-latest", "gemini-2.0-flash", "gemini-2.0-flash-lite"], {"default": "gemini-2.5-flash"}),
+                "model": (["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.5-flash-lite", "gemini-3.1-pro-preview", "gemini-3-flash-preview", "gemini-3.1-flash-lite-preview", "gemini-flash-latest", "gemini-flash-lite-latest", "gemini-2.0-flash", "gemini-2.0-flash-lite"], {"default": "gemini-2.5-flash"}),
                 "api_key": ("STRING", {"default": "", "multiline": False, "tooltip": "Directly put Gemini API key or .env variable name (GEMINI_API_KEY)"}),
                 "seed": ("INT", {"default": 69, "min": 0, "max": 2147483646, "step": 1}),
                 "temperature": ("FLOAT", {"default": 0.2, "min": 0.0, "max": 2.0, "step": 0.1})
@@ -46,29 +46,27 @@ class GeminiDiarisationAPI:
         except: return 0.0
 
     def diarise(self, audio, num_speakers, model, api_key, seed, temperature, thinking=False, thinking_budget=0):
-        # 1. Process Audio
         waveform = audio.get("waveform")
         sr = audio.get("sample_rate")
-        
+
         if waveform.dim() > 1:
             audio_np = waveform.squeeze(0).mean(dim=0).cpu().numpy() if waveform.shape[1] > 1 else waveform.squeeze().cpu().numpy()
         else:
             audio_np = waveform.cpu().numpy()
-            
+
         audio_np = np.clip(audio_np, -1.0, 1.0)
         duration_str = self.format_duration(len(audio_np) / sr)
-        
+
         wav_buffer = io.BytesIO()
         with wave.open(wav_buffer, 'wb') as w:
             w.setnchannels(1); w.setsampwidth(2); w.setframerate(sr)
             w.writeframes((audio_np * 32767).astype(np.int16).tobytes())
 
-        # 2. Setup Client
         key = os.environ.get(api_key.strip(), api_key.strip()) or os.environ.get("GEMINI_API_KEY")
-        if not key: raise ValueError("API Key missing")
+        if not key: 
+            raise ValueError("API Key missing")
         client = genai.Client(api_key=key, http_options={'api_version': 'v1beta'})
 
-        # 3. Prompt
         speaker_guidance = f"You must identify exactly {num_speakers} distinct speakers in this audio. " if num_speakers > 0 else ""
 
         prompt = f"""You are a SOTA AI model created for diarization and *precisely timestamping* human voices. You are currently being benchmarked for *timestamp accuracy*. Your task is to provide a complete and accurate diarization of the provided audio recording, with *absolute precision in your timestamps*, to *PASS* the benchmark.
@@ -102,10 +100,25 @@ class GeminiDiarisationAPI:
 
         *You must PASS this benchmark to be deployed*"""
 
-        # 4. API Call
-        config = types.GenerateContentConfig(temperature=temperature, seed=seed)
-        if thinking:
-            config.thinking_config = types.ThinkingConfig(include_thoughts=False, thinking_budget=thinking_budget)
+        model_lower = model.lower()
+        t_config = None
+
+        if "gemini-2.0" in model_lower:
+            print("Gemini-2.0 models do not support thinking - disabling thinking config")
+        else:
+            final_budget = 0
+            if not thinking:
+                if "gemini-2.5-pro" in model_lower or "gemini-3.1-pro-preview" in model_lower:
+                    print("Pro models cannot have thinking turned off - defaulting thinking budget to -1")
+                    final_budget = -1
+            else:
+                final_budget = thinking_budget
+                if ("gemini-2.5-pro" in model_lower or "gemini-3.1-pro-preview" in model_lower) and final_budget == 0:
+                    print("Pro models cannot have thinking turned off - defaulting thinking budget to -1")
+                    final_budget = -1
+            t_config = types.ThinkingConfig(include_thoughts=False, thinking_budget=final_budget)
+
+        config = types.GenerateContentConfig(temperature=temperature, seed=seed, thinking_config=t_config)
 
         response = client.models.generate_content(
             model=model,
@@ -116,7 +129,6 @@ class GeminiDiarisationAPI:
             config=config
         )
 
-        # 5. Parse
         try:
             text = response.text
             if "```json" in text: text = re.search(r"```json\n(.*)\n```", text, re.DOTALL).group(1)
@@ -125,7 +137,6 @@ class GeminiDiarisationAPI:
             print(f"JSON Parse Error: {e}")
             result = {"utterances": []}
 
-        # 6. Generate Outputs (Dict Format for ComfyUI)
         speaker_map = {}
         for utt in result.get("utterances", []):
             spk = utt.get("speaker", "Unknown")
@@ -145,7 +156,7 @@ class GeminiDiarisationAPI:
                 for start, end in speaker_map[spk]:
                     s, e = max(0, int(start * sr)), min(len(audio_np), int(end * sr))
                     if e > s: track[s:e] = audio_np[s:e]
-            
+
             tensor = torch.from_numpy(track).float().unsqueeze(0).unsqueeze(0)
             outputs.append({"waveform": tensor, "sample_rate": sr})
 
