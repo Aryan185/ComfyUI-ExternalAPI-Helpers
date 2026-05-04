@@ -13,7 +13,7 @@ class GoogleImagenNode:
             "required": {
                 "prompt": ("STRING", {"multiline": True}),
                 "api_key": ("STRING", {"multiline": False, "default": "", "tooltip": "Directly put Gemini API key or .env variable name (GEMINI_API_KEY)"}),
-                "model": (["models/imagen-4.0-ultra-generate-001", "models/imagen-4.0-generate-001", "models/imagen-4.0-fast-generate-001", "models/imagen-3.0-generate-002"],),
+                "model": (["models/imagen-4.0-ultra-generate-001", "models/imagen-4.0-generate-001", "models/imagen-4.0-fast-generate-001"],),
                 "number_of_images": ("INT", {"default": 1, "min": 1, "max": 4, "step": 1}),
                 "aspect_ratio": (["1:1", "9:16", "16:9", "4:3", "3:4"],),
                 "image_size": (["1K", "2K"],),
@@ -43,7 +43,7 @@ class GoogleImagenNode:
             negative_prompt=negative_prompt.strip() if negative_prompt.strip() else None
         )
 
-        if "imagen-4.0" in model and "fast" not in model:
+        if "fast" not in model:
             config.image_size = image_size
 
         try:
