@@ -1,6 +1,6 @@
 [project]
 name = "externalapi-helpers"
-description = "Various ComfyUI nodes for Gemini, Replicate and OpenAI"
+description = "ComfyUI nodes for FLUX.1 Kontext, FLUX.2, Gemini, Veo, Imagen, OpenAI GPT, GPT-Image, Sora, xAI Grok, Groq, ElevenLabs, Nano Banana, and Tripo"
 version = "1.1.5"
 license = {file = "LICENSE"} 
 # classifiers = [
