@@ -15,7 +15,19 @@ class GeminiDiarisationAPI:
             "required": {
                 "audio": ("AUDIO",),
                 "num_speakers": ("INT", {"default": 2, "min": 1, "max": 10, "step": 1}),
-                "model": (["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.5-flash-lite", "gemini-3.5-flash", "gemini-3.1-pro-preview", "gemini-3-flash-preview", "gemini-3.1-flash-lite-preview", "gemini-flash-latest", "gemini-flash-lite-latest", "gemini-2.0-flash", "gemini-2.0-flash-lite"], {"default": "gemini-2.5-flash"}),
+                "model": ([
+                    "gemini-3.6-flash", 
+                    "gemini-3.5-flash", 
+                    "gemini-3.5-flash-lite", 
+                    "gemini-3.1-pro-preview", 
+                    "gemini-3.1-flash-lite", 
+                    "gemini-3-flash-preview", 
+                    "gemini-2.5-flash", 
+                    "gemini-2.5-pro", 
+                    "gemini-2.5-flash-lite", 
+                    "gemini-flash-latest", 
+                    "gemini-flash-lite-latest"
+                ], {"default": "gemini-3.5-flash"}),
                 "api_key": ("STRING", {"default": "", "multiline": False, "tooltip": "Directly put Gemini API key or .env variable name (GEMINI_API_KEY)"}),
                 "seed": ("INT", {"default": 69, "min": 0, "max": 2147483646, "step": 1}),
                 "temperature": ("FLOAT", {"default": 0.2, "min": 0.0, "max": 2.0, "step": 0.1})
@@ -103,19 +115,14 @@ class GeminiDiarisationAPI:
         model_lower = model.lower()
         t_config = None
 
-        if "gemini-2.0" in model_lower:
-            print("Gemini-2.0 models do not support thinking - disabling thinking config")
-        else:
-            final_budget = 0
-            if not thinking:
-                if "gemini-2.5-pro" in model_lower or "gemini-3.1-pro-preview" in model_lower:
-                    print("Pro models cannot have thinking turned off - defaulting thinking budget to -1")
-                    final_budget = -1
-            else:
-                final_budget = thinking_budget
-                if ("gemini-2.5-pro" in model_lower or "gemini-3.1-pro-preview" in model_lower) and final_budget == 0:
-                    print("Pro models cannot have thinking turned off - defaulting thinking budget to -1")
-                    final_budget = -1
+        # Check if the chosen model is a Pro model (requires thinking configurations to run properly)
+        is_pro = "pro" in model_lower
+
+        if is_pro or thinking:
+            final_budget = thinking_budget if thinking else 0
+            if is_pro and final_budget == 0:
+                print("Pro models cannot have thinking turned off - defaulting thinking budget to -1")
+                final_budget = -1
             t_config = types.ThinkingConfig(include_thoughts=False, thinking_budget=final_budget)
 
         config = types.GenerateContentConfig(temperature=temperature, seed=seed, thinking_config=t_config)

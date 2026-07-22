@@ -14,7 +14,7 @@ class NanoBananaNode:
             "required": {
                 "prompt": ("STRING", {"multiline": True, "default": ""}),
                 "api_key": ("STRING", {"multiline": False, "default": "", "tooltip": "Directly put Gemini API key or .env variable name (GEMINI_API_KEY)"}),
-                "model": (["gemini-3-pro-image-preview", "gemini-2.5-flash-image", "gemini-3.1-flash-image-preview"],),
+                "model": (["gemini-3-pro-image", "gemini-2.5-flash-image", "gemini-3.1-flash-image", "gemini-3.1-flash-lite-image"]),
                 "aspect_ratio": (["1:1", "2:3", "3:2", "3:4", "4:3", "9:16", "16:9", "21:9"],),
                 "resolution": (["1K", "2K", "4K"], {"default": "1K"}),
                 "temperature": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 1.0, "step": 0.01}),
@@ -68,7 +68,7 @@ class NanoBananaNode:
 
         tools = None
         if google_search:
-            if "gemini-2.5" in model:
+            if "gemini-2.5" in model or "gemini-3.1-flash-lite-image" in model:
                 print(f"Ignoring google_search: {model} does not support it.")
             else:
                 tools = [types.Tool(googleSearch=types.GoogleSearch())]

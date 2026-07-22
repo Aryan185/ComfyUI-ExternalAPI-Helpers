@@ -12,13 +12,12 @@ class ElevenLabsTTSNode:
             "required": {
                 "text": ("STRING", {"multiline": True, "default": ""}),
                 "model_id": ([
+                    "eleven_v3",
                     "eleven_multilingual_v2",
-                    "eleven_turbo_v2_5",
                     "eleven_flash_v2_5", 
                     "eleven_flash_v2",
+                    "eleven_turbo_v2_5",
                     "eleven_turbo_v2",
-                    "eleven_multilingual_v1",
-                    "eleven_v3"
                 ],),
                 "output_format": ([
                     "mp3_44100_128",
