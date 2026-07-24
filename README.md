@@ -7,7 +7,6 @@ A collection of powerful custom nodes for ComfyUI that connect your local workfl
 *   **FLUX Kontext Pro & Max:** Image-to-image transformations using the FLUX models via the Replicate API.
 *   **Flux.2 (Replicate):** Generate images using the latest FLUX.2 models (Pro, Max, Dev) via Replicate.
 *   **Gemini Chat:** Google's powerful multimodal AI. Ask questions about an image, generate detailed descriptions or create prompts for other models. Supports thinking budget controls for applicable models. Now supports audio input.
-*   **Gemini Segmentation:** Generate segmentation masks for objects in an image using Gemini.
 *   **Gemini Speaker Diarization:** Separate audio into different speaker tracks using Gemini.
 *   **GPT Image Edit:** OpenAI's `gpt-image-1` for prompt-based image editing and inpainting. Simply mask an area and describe the change you want to see.
 *   **OpenAI LLM:** Access OpenAI's powerful language models (GPT-4, GPT-5, o1, etc.) for text generation and reasoning.
@@ -106,14 +105,6 @@ Multimodal text generation with image and audio analysis capabilities.
 *   **Category:** `text/generation`
 *   **Key Inputs:** `thinking`, `thinking_budget`, `system_instruction`, `image` (optional), `audio` (optional)
 *   **Output:** `response` (text)
-
-### Gemini Segmentation
-
-Generate segmentation masks for objects in an image.
-
-*   **Category:** `image/generation`
-*   **Key Inputs:** `image`, `segment_prompt` (e.g., "the car", "all people"), `thinking`, `thinking_budget`
-*   **Output:** `mask`
 
 ### Gemini Speaker Diarization
 

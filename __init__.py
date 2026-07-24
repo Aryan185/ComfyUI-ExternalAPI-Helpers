@@ -12,7 +12,6 @@ modules = [
     "imagen_edit",
     "veo",
     "veo_api",
-    "gemini_segment",
     "nano_banana",
     "gemini_tts",
     "elevenlabs_tts",
