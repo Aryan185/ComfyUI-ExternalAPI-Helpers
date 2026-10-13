@@ -97,4 +97,4 @@ class GeminiTTSNode:
         return f"{kwargs.get('text', '')}-{kwargs.get('voice_id', '')}-{kwargs.get('temperature', 1.0)}-{kwargs.get('model', '')}-{kwargs.get('seed', 69)}-{kwargs.get('audio_profile', '')}-{kwargs.get('style', '')}-{kwargs.get('pace', '')}-{kwargs.get('accent', '')}-{kwargs.get('scene', '')}"
 
 NODE_CLASS_MAPPINGS = {"GeminiTTSNode": GeminiTTSNode}
-NODE_DISPLAY_NAME_MAPPINGS = {"GeminiTTSNode": "Gemini TTS"}
+NODE_DISPLAY_NAME_MAPPINGS = {"GeminiTTSNode": "Gemini TTS (Legacy)"}

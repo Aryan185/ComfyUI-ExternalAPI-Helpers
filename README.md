@@ -1,25 +1,25 @@
 # ComfyUI-ExternalAPI-Helpers
 
-A collection of powerful custom nodes for ComfyUI that connect your local workflows to closed-source AI models via their APIs. Use Google's Gemini, Imagen, Veo, OpenAI's GPT-Image-1, and Black Forest Labs' FLUX models directly within ComfyUI.
+A collection of powerful custom nodes for ComfyUI that connect your local workflows to closed-source AI models via their APIs. Use Google's Gemini, Imagen, Veo 3.1, OpenAI's GPT-6 and GPT Image 2.5, ElevenLabs v4, and Black Forest Labs' FLUX models directly within ComfyUI.
 
 ## Key Features
 
 *   **FLUX Kontext Pro & Max:** Image-to-image transformations using the FLUX models via the Replicate API.
 *   **Flux.2 (Replicate):** Generate images using the latest FLUX.2 models (Pro, Max, Dev) via Replicate.
-*   **Gemini Chat:** Google's powerful multimodal AI. Ask questions about an image, generate detailed descriptions or create prompts for other models. Supports thinking budget controls for applicable models. Now supports audio input.
-*   **Gemini Speaker Diarization:** Separate audio into different speaker tracks using Gemini.
-*   **GPT Image Edit:** OpenAI's `gpt-image-1` for prompt-based image editing and inpainting. Simply mask an area and describe the change you want to see.
-*   **OpenAI LLM:** Access OpenAI's powerful language models (GPT-4, GPT-5, o1, etc.) for text generation and reasoning.
+*   **Gemini Chat:** Google's frontier multimodal models (Gemini 3.8 Flash, 3.6 Flash, 3.5 Flash-Lite, 3.1 Pro). Analyze images, process audio waveforms, and generate responses with dynamic thinking controls.
+*   **Gemini Speaker Diarization:** Separate audio into individual speaker tracks with high-precision timestamping using Gemini 3.8.
+*   **GPT Image Edit:** Prompt-based image editing and inpainting with OpenAI's latest `gpt-image-2.5-sunburst` and `gpt-image-2.5-flare` alongside GPT Image 2.
+*   **OpenAI LLM:** Access OpenAI's frontier reasoning and generation models (GPT-6, GPT-5.6 family, GPT-5.5, GPT-5.4) using the native Responses API with selectable reasoning effort (`none`, `low`, `medium`, `high`).
+*   **OpenAI Text-to-Speech:** Generate speech with OpenAI's TTS models (`gpt-4o-mini-tts`, `tts-1`, `tts-1-hd`) featuring all 13 built-in voices and natural language tone/style instructions.
+*   **ElevenLabs TTS:** Generate speech using ElevenLabs' newest **Eleven v4** and **Eleven v4 Turbo** models with automatic parameter branching, alongside legacy v3 and multilingual engines.
+*   **Gemini 3.8 TTS:** Next-gen speech synthesis powered by Gemini 3.8 with access to Google's Extended Voice Library (2,000+ voices like *Bodi*, *Lumi*, *Koda*), native `speech_metadata` style direction, and inline vocal tags (`<breath>`, `<laugh>`, `<short pause>`, `<sigh>`, `<cough>`).
+*   **Gemini TTS (Legacy):** Dedicated backwards-compatible node for earlier Gemini 2.5 and 3.1 celestial voice endpoints.
+*   **Nano Banana:** Google's native image generation and editing using the latest **`gemini-nano-banana-2.1`**, featuring 1K/2K/4K resolution control and multi-image consistency.
+*   **Veo Video Generator (Gemini API & Vertex AI):** Generate video clips using Google's **Veo 3.1** family (`veo-3.1-generate-preview`, `veo-3.1-fast`, `veo-3.1-lite` / Vertex `001` releases) with native synchronized audio, 1080p HD support, and flexible durations.
+*   **Google Imagen Generator & Edit:** Create and edit images with Google's Imagen models, with support for Vertex AI.
 *   **Groq LLM:** Fast text generation using Groq-hosted models, with optional image input for supported vision models.
 *   **Groq Orpheus TTS:** Generate speech using Groq-hosted Orpheus text-to-speech models.
-*   **OpenAI Text-to-Speech:** Generate high-quality speech using OpenAI's TTS models.
-*   **Google Imagen Generator & Edit:** Create and edit images with Google's Imagen models, with support for Vertex AI.
-*   **Nano Banana:** A creative image generation node using a specialized Gemini model.
-*   **Veo Video Generator:** Generate high-quality video clips from text prompts using Google's Veo model via Vertex AI or the Gemini API.
-*   **ElevenLabs TTS:** Generate high-quality speech from text using ElevenLabs' diverse range of voices and models.
-*   **Gemini TTS:** Create speech from text using Google's Gemini models.
-*   **Tripo Text-to-3D:** Generate 3D models from text prompts using Tripo AI's advanced 3D generation API.
-*   **Tripo Image-to-3D:** Convert images into detailed 3D models using Tripo AI's image-to-model capability.
+*   **Tripo Text-to-3D & Image-to-3D:** Generate and convert images into production 3D models using Tripo AI.
 
 ---
 
@@ -34,208 +34,146 @@ A collection of powerful custom nodes for ComfyUI that connect your local workfl
     ```bash
     git clone https://github.com/Aryan185/ComfyUI-ExternalAPI-Helpers.git
     ```
-
-4.  Install the required Python packages. Navigate into the newly cloned directory and use pip to install the dependencies:
+4.  Install the required Python packages:
     ```bash
     cd ComfyUI-ExternalAPI-Helpers
     pip install -r requirements.txt
     ```
-5.  **Restart ComfyUI.** After restarting, you should find the new nodes in the "Add Node" menu.
+5.  **Restart ComfyUI.** The nodes will be available in the "Add Node" menu.
 
 ---
 
 ## 🔑 Prerequisites: API Keys
 
-All nodes in this collection require API keys to function.
-
-*   **FLUX Nodes (Replicate):** You will need a [Replicate API Token](https://replicate.com/account/api-tokens).
-*   **Gemini, Imagen, Nano Banana, Gemini TTS, Gemini Diarization, and Veo (Gemini API) Nodes:** You will need a [Google AI Studio API Key](https://aistudio.google.com/app/api-keys).
-*   **OpenAI Nodes (GPT Image Edit, OpenAI LLM, OpenAI TTS):** You will need an [OpenAI API Key](https://platform.openai.com/api-keys).
-*   **Groq Nodes (LLM, Orpheus TTS):** You will need a [Groq API Key](https://console.groq.com/keys).
-*   **ElevenLabs TTS Node:** You will need an [ElevenLabs API Key](https://elevenlabs.io/).
-*   **Tripo Nodes (Text-to-3D, Image-to-3D):** You will need a [Tripo API Key](https://tripo3d.ai/).
-*   **Vertex AI Nodes (Imagen Edit, Veo Vertex AI):** You will need a Google Cloud Project ID, a service account with appropriate permissions, and the location for the resources.
-
-You can paste your key directly into the `api_key` field on the corresponding node. For Vertex AI nodes, you will need to provide the project ID, location, and paste your service account JSON content.
+*   **FLUX Nodes (Replicate):** [Replicate API Token](https://replicate.com/account/api-tokens).
+*   **Google AI Studio Nodes (Gemini Chat, Diarization, Nano Banana, Gemini 3.8 TTS, Veo Gemini API):** [Google AI Studio API Key](https://aistudio.google.com/app/api-keys).
+*   **OpenAI Nodes (GPT Image Edit, OpenAI LLM, OpenAI TTS):** [OpenAI API Key](https://platform.openai.com/api-keys).
+*   **ElevenLabs TTS Node:** [ElevenLabs API Key](https://elevenlabs.io/).
+*   **Groq Nodes (LLM, Orpheus TTS):** [Groq API Key](https://console.groq.com/keys).
+*   **Tripo Nodes (Text-to-3D, Image-to-3D):** [Tripo API Key](https://tripo3d.ai/).
+*   **Vertex AI Nodes (Imagen Edit, Veo Vertex AI):** Google Cloud Project ID, location, and service account JSON key.
 
 ### Using Environment Variables (.env file)
 
-Instead of pasting API keys directly into nodes, you can store them in a `.env` file:
+Instead of pasting raw API keys into every node, store them in a `.env` file in the node directory:
 
-1. Copy `.env.example` to `.env` in the node directory
-2. Fill in your API keys:
-   ```
-   GEMINI_API_KEY=your_gemini_key_here
-   OPENAI_API_KEY=your_openai_key_here
-   GROQ_API_KEY=your_groq_key_here
-   XI_API_KEY=your_elevenlabs_key_here
-   REPLICATE_API_TOKEN=your_replicate_token_here
-   TRIPO_API_KEY=your_tripo_api_key_here
-   ```
-3. In the node's `api_key` field, enter the variable name (e.g., `GEMINI_API_KEY`) instead of the actual key
+```env
+GEMINI_API_KEY=your_gemini_key_here
+OPENAI_API_KEY=your_openai_key_here
+XI_API_KEY=your_elevenlabs_key_here
+GROQ_API_KEY=your_groq_key_here
+REPLICATE_API_TOKEN=your_replicate_token_here
+TRIPO_API_KEY=your_tripo_api_key_here
+```
 
-This keeps your API keys secure and makes it easy to switch between different keys or projects.
+In any node's `api_key` field, you can simply type the variable name (e.g. `GEMINI_API_KEY`) instead of exposing your actual secret.
 
 ---
 
 ## 📚 Node Guide
 
-> **Note:** All nodes include standard inputs like `api_key`, `prompt`, `model`, `temperature`, and `seed` where applicable. Only unique or notable inputs are listed below.
-
 ### Flux Kontext Pro / Max
-
-Transform images based on text prompts. Ideal for applying artistic styles or making conceptual changes.
-
 *   **Category:** `image/edit`
 *   **Key Inputs:** `image`, `aspect_ratio` (use `match_input_image` to preserve composition)
 *   **Output:** `image`
 
 ### Flux.2 (Replicate)
-
-Generate images using FLUX.2 models (Pro, Max, Dev) via Replicate.
-
 *   **Category:** `image/generation`
 *   **Key Inputs:** `image_1` to `image_5` (optional, for image-to-image tasks)
 *   **Output:** `image`
 
 ### Gemini Chat
-
-Multimodal text generation with image and audio analysis capabilities.
-
 *   **Category:** `text/generation`
-*   **Key Inputs:** `thinking`, `thinking_budget`, `system_instruction`, `image` (optional), `audio` (optional)
+*   **Models:** `gemini-3.8-flash` (default), `gemini-3.6-flash`, `gemini-3.5-flash-lite`, `gemini-3.1-pro-preview`, dynamic aliases.
+*   **Key Inputs:** `prompt`, `thinking`, `thinking_budget`, `google_search`, `system_instruction`, `image` (optional), `audio` (optional)
 *   **Output:** `response` (text)
 
 ### Gemini Speaker Diarization
-
-Separate audio into different speaker tracks.
-
 *   **Category:** `audio/diarise`
-*   **Key Inputs:** `audio`, `num_speakers`, `thinking`, `thinking_budget`
-*   **Output:** `speaker_1` to `speaker_4` (audio tracks)
+*   **Key Inputs:** `audio`, `num_speakers`, `model`, `thinking`, `thinking_budget`
+*   **Output:** `speaker_1` to `speaker_4` (isolated audio tracks)
 
 ### GPT Image Edit
-
-Prompt-based inpainting and image editing using OpenAI's API.
-
-*   **Category:** `image/edit`
-*   **Key Inputs:** `image_1` to `image_5`, `mask` (optional, white area = edit region), `background`, `quality`, `size`
+*   **Category:** `image/generation`
+*   **Models:** `gpt-image-2.5-sunburst` (default), `gpt-image-2.5-flare`, `gpt-image-2`, `gpt-image-1.5`, `gpt-image-1`
+*   **Key Inputs:** `prompt`, `image_1` to `image_5` (optional reference/edit inputs), `mask` (optional, white area = inpainting region), `background`, `quality`, `size`
 *   **Output:** `image`
 
 ### OpenAI LLM
-
-Access OpenAI language models (GPT-4, GPT-5, o1, etc.) for text generation.
-
 *   **Category:** `text/generation`
-*   **Key Inputs:** `reasoning_effort` (low/medium/high), `max_output_tokens`, `system_instruction`, `image` (optional)
+*   **Models:** `gpt-6` (default), `gpt-6.1-sol`, `gpt-6-luna`, `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna`, `gpt-5.5`, `gpt-5.4`, `gpt-4.1`
+*   **Key Inputs:** `prompt`, `reasoning_effort` (`none`, `low`, `medium`, `high`), `max_output_tokens`, `system_instruction`, `image` (optional)
 *   **Output:** `response` (text)
-
-### Groq LLM
-
-Access Groq-hosted language models for fast text generation, with optional image understanding on supported vision models.
-
-*   **Category:** `text/generation`
-*   **Key Inputs:** `max_completion_tokens`, `reasoning_effort`, `system_instruction`, `image` (optional)
-*   **Output:** `response` (text)
-
-### Groq Orpheus TTS
-
-Generate speech using Groq-hosted Orpheus text-to-speech models.
-
-*   **Category:** `audio/generation`
-*   **Key Inputs:** `text`, `voice`, `speed`
-*   **Output:** `audio`
 
 ### OpenAI Text-to-Speech
-
-Generate speech using OpenAI's TTS models.
-
 *   **Category:** `audio/generation`
-*   **Key Inputs:** `text`, `voice` (alloy, echo, etc.), `response_format`, `speed`, `instructions` (optional)
+*   **Models:** `gpt-4o-mini-tts` (default), `tts-1`, `tts-1-hd`
+*   **Voices:** 13 voices (`alloy`, `ash`, `ballad`, `cedar`, `coral`, `echo`, `fable`, `marin`, `nova`, `onyx`, `sage`, `shimmer`, `verse`)
+*   **Key Inputs:** `text`, `voice`, `response_format`, `speed`, `instructions` (natural-language tone/pacing direction on `gpt-4o-mini-tts`)
 *   **Output:** `audio`
-
-### Google Imagen Generator
-
-Generate images from text using Google's Imagen models.
-
-*   **Category:** `image/generation`
-*   **Key Inputs:** `number_of_images`, `aspect_ratio`, `image_size`, `guidance_scale`, `negative_prompt`
-*   **Output:** `images`
-
-### Google Imagen Edit (Vertex AI only)
-
-Advanced image editing with inpainting, outpainting, and background swapping.
-
-*   **Category:** `image/edit`
-*   **Key Inputs:** `image`, `mask`, `project_id`, `location`, `service_account` (JSON content), `edit_mode`
-*   **Output:** `edited_images`
-
-### Nano Banana
-
-Creative image generation using a specialized Gemini model.
-
-*   **Category:** `image/generation`
-*   **Key Inputs:** `image_1` to `image_5` (optional), `aspect_ratio`, `resolution`, `top_p`
-*   **Output:** `image`
-
-### Veo Video Generator (Vertex AI)
-
-Generate video clips using Google's Veo model on Vertex AI.
-
-*   **Category:** `video/generation`
-*   **Key Inputs:** `project_id`, `location`, `service_account` (JSON content), `resolution`, `aspect_ratio`, `duration_seconds`, `generate_audio`, `first_frame`/`last_frame` (optional)
-*   **Output:** `frames`, `audio`
-
-### Veo Video Generator (Gemini API)
-
-Generate videos using Veo 2.0 via the Gemini API. Supports text-to-video and image-to-video.
-
-*   **Category:** `video/generation`
-*   **Key Inputs:** `aspect_ratio`, `duration_seconds`, `negative_prompt`, `image` (optional, for image-to-video)
-*   **Output:** `frames`
 
 ### ElevenLabs TTS
-
-Generate speech using ElevenLabs' diverse voices and models.
-
 *   **Category:** `audio/generation`
-*   **Key Inputs:** `text`, `voice_id`, `model_id`, `stability`, `similarity_boost`, `speed`, `style`, `use_speaker_boost`
+*   **Models:** `eleven_v4` (default), `eleven_v4_turbo`, `eleven_v3`, `eleven_multilingual_v2`, `eleven_flash_v2_5`, `eleven_flash_v2`, `eleven_turbo_v2_5`
+*   **Key Inputs:** `text`, `voice_id`, `stability`, `similarity_boost`, `speed`, `style`, `use_speaker_boost`, `previous_text` / `next_text` (automatically branches parameters to match v4 requirements)
 *   **Output:** `audio`
 
-### Gemini TTS
-
-Generate speech using Google's Gemini TTS models.
-
+### Gemini 3.8 TTS
 *   **Category:** `audio/generation`
-*   **Key Inputs:** `text`, `voice_id`, `system_prompt` (optional)
+*   **Models:** `gemini-3.8-flash-tts` (default), `gemini-3.8-flash-lite-tts`
+*   **Key Inputs:** 
+    *   `text`: Supports point-in-time inline tags directly in the transcript (e.g. `<breath>`, `<laugh>`, `<short pause>`, `<long pause>`, `<sigh>`, `<cough>`, `<gasp>`, `<whispering>`).
+    *   `voice`: Open string targeting any of the 2,000+ Extended Voice Library voices from AI Studio (e.g. `Bodi`, `Lumi`, `Koda`, `Nika`, `Tavi`) or legacy celestial voices (`Puck`, `Zephyr`).
+    *   `style`: Global acting/delivery note passed straight to native `speech_metadata`.
 *   **Output:** `audio`
 
-### Tripo Text-to-3D
+### Gemini TTS (Legacy)
+*   **Category:** `audio/generation`
+*   **Models:** `gemini-2.5-flash-preview-tts`, `gemini-2.5-pro-preview-tts`, `gemini-3.1-flash-tts-preview`
+*   **Key Inputs:** Fixed 30 celestial voices dropdown (`Puck`, `Zephyr`, etc.), `pace`, `accent`, `scene`, `audio_profile` prompt-director options.
+*   **Output:** `audio`
 
-Generate high-quality 3D models from text prompts using Tripo AI's powerful generation engine.
+### Nano Banana
+*   **Category:** `image/generation`
+*   **Models:** `gemini-nano-banana-2.1` (default), `gemini-3-pro-image`, `gemini-3.1-flash-lite-image`, `gemini-3.1-flash-image`, `gemini-2.5-flash-image`
+*   **Key Inputs:** `prompt`, `aspect_ratio`, `resolution` (`1K`, `2K`, `4K`), `image_1` to `image_5` (multi-image consistency & editing), `google_search`
+*   **Output:** `image`
 
+### Veo Video Generator (Gemini API)
+*   **Category:** `video/generation`
+*   **Models:** `veo-3.1-generate-preview` (default), `veo-3.1-fast-generate-preview`, `veo-3.1-lite-generate-preview`, `veo-2.0-generate-001`
+*   **Key Inputs:** `prompt`, `aspect_ratio` (16:9, 9:16), `resolution` (720p, 1080p on 3.1), `duration_seconds` (4 to 8s), `image` (optional, for image-to-video)
+*   **Output:** `frames`
+
+### Veo Video Generator (Vertex AI)
+*   **Category:** `video/generation`
+*   **Models:** `veo-3.1-generate-001` (default), `veo-3.1-fast-generate-001`, `veo-3.0-generate-001`, `veo-2.0-generate-001`
+*   **Key Inputs:** `project_id`, `location`, `service_account`, `resolution`, `aspect_ratio`, `duration_seconds`, `generate_audio` (native synchronized audio on 3.x), `first_frame` / `last_frame`
+*   **Output:** `frames`, `audio`
+
+### Google Imagen Generator & Edit
+*   **Category:** `image/generation` & `image/edit`
+*   **Key Inputs:** Generation controls (`aspect_ratio`, `image_size`, `guidance_scale`) and Vertex AI edit modes (inpainting, outpainting, background swap).
+*   **Output:** `images` / `edited_images`
+
+### Groq LLM & Groq Orpheus TTS
+*   **Category:** `text/generation` & `audio/generation`
+*   **Key Inputs:** Fast inference using Groq Cloud endpoints for text/vision reasoning and Orpheus voice generation.
+*   **Output:** `response` (text) / `audio`
+
+### Tripo Text-to-3D & Image-to-3D
 *   **Category:** `3D/generation`
-*   **Key Inputs:** `prompt`, `model_version` (v3.0, v2.5, v2.0, v1.4, Turbo), `texture_quality` (standard/detailed), `save_name`
-*   **Optional Inputs:** `seed`, `face_limit` (500-100000, default 20000), `texture_size` (512/1024/2048), `pbr` (realistic lighting), `negative_prompt`
+*   **Key Inputs:** `prompt` or `image`, `model_version` (v3.0, v2.5, v2.0, Turbo), `texture_quality`, `face_limit`, `pbr`
 *   **Output:** `glb` (3D model file)
 
-### Tripo Image-to-3D
-
-Convert images into detailed 3D models using Tripo AI's advanced image-to-model technology.
-
-*   **Category:** `3D/generation`
-*   **Key Inputs:** `image`, `model_version` (v3.0, v2.5, v2.0, v1.4), `texture_quality` (standard/detailed), `save_name`
-*   **Optional Inputs:** `seed`, `texture_seed` (randomness of colors/textures), `face_limit` (500-100000, default 20000), `texture_size` (512/1024/2048), `pbr` (realistic lighting)
-*   **Output:** `glb` (3D model file)
-
+---
 
 ## Acknowledgements
 
-*   The [ComfyUI](https://github.com/comfyanonymous/ComfyUI) team for building the workflow platform that makes these nodes possible.
-*   [Google](https://deepmind.google/technologies/gemini/) for Gemini, Imagen, and Veo.
-*   [OpenAI](https://openai.com/) for GPT models and image and speech APIs.
-*   [Groq](https://groq.com/) for fast inference and hosted text-to-speech support.
-*   [xAI](https://x.ai/) for Grok image generation and editing models.
-*   [Black Forest Labs](https://www.blackforestlabs.ai/) and [Replicate](https://replicate.com/) for FLUX model access.
-*   [ElevenLabs](https://elevenlabs.io/) for speech synthesis.
-*   [Tripo AI](https://www.tripo3d.ai/) for 3D generation APIs.
+*   The [ComfyUI](https://github.com/comfyanonymous/ComfyUI) team for building the modular node platform.
+*   [Google](https://deepmind.google/technologies/gemini/) for Gemini 3.8, Nano Banana, Imagen, and Veo 3.1.
+*   [OpenAI](https://openai.com/) for GPT-6, GPT Image 2.5, and speech models.
+*   [ElevenLabs](https://elevenlabs.io/) for Eleven v4 and conversational audio synthesis.
+*   [Groq](https://groq.com/) for high-throughput LPU inference.
+*   [Black Forest Labs](https://www.blackforestlabs.ai/) and [Replicate](https://replicate.com/) for FLUX model infrastructure.
+*   [Tripo AI](https://www.tripo3d.ai/) for native text and image-to-3D APIs.

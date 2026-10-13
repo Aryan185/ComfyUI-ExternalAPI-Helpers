@@ -12,6 +12,8 @@ class ElevenLabsTTSNode:
             "required": {
                 "text": ("STRING", {"multiline": True, "default": ""}),
                 "model_id": ([
+                    "eleven_v4",
+                    "eleven_v4_turbo",
                     "eleven_v3",
                     "eleven_multilingual_v2",
                     "eleven_flash_v2_5", 
@@ -85,13 +87,19 @@ class ElevenLabsTTSNode:
             if stability != original_stability:
                 print(f"For 'eleven_v3' model, stability value must be one of: [0.0, 0.5, 1.0] (0.0 = Creative, 0.5 = Natural, 1.0 = Robust). Rounding stability to {stability}.")
 
-        voice_settings = {
-            "stability": stability,
-            "similarity_boost": similarity_boost,
-            "speed": speed,
-            "style": style,
-            "use_speaker_boost": use_speaker_boost
-        }
+        if model_id.startswith("eleven_v4"):
+            voice_settings = {
+                "stability": stability,
+                "similarity_boost": similarity_boost
+            }
+        else:
+            voice_settings = {
+                "stability": stability,
+                "similarity_boost": similarity_boost,
+                "speed": speed,
+                "style": style,
+                "use_speaker_boost": use_speaker_boost
+            }
         
         data = {
             "text": text,
@@ -101,9 +109,9 @@ class ElevenLabsTTSNode:
             "output_format": output_format
         }
         
-        if model_id == "eleven_v3":
+        if model_id.startswith("eleven_v4") or model_id == "eleven_v3":
             if previous_text.strip() or next_text.strip():
-                print("Providing previous_text or next_text is not yet supported with the 'eleven_v3' model. Ignoring these inputs.")
+                print(f"Providing previous_text or next_text is not supported with '{model_id}'. Ignoring these inputs.")
         else:
             if previous_text.strip():
                 data["previous_text"] = previous_text
@@ -130,7 +138,7 @@ class ElevenLabsTTSNode:
     
     @classmethod
     def IS_CHANGED(cls, **kwargs):
-        return f"{kwargs.get('text', '')}-{kwargs.get('voice_id', '')}-{kwargs.get('seed', 40)}"
+        return f"{kwargs.get('text', '')}-{kwargs.get('voice_id', '')}-{kwargs.get('seed', 40)}-{kwargs.get('model_id', '')}"
 
 NODE_CLASS_MAPPINGS = {"ElevenLabsTTSNode": ElevenLabsTTSNode}
 NODE_DISPLAY_NAME_MAPPINGS = {"ElevenLabsTTSNode": "ElevenLabs TTS"}

@@ -14,9 +14,15 @@ class VeoGeminiVideoGenerator:
         return {
             "required": {
                 "prompt": ("STRING", {"multiline": True, "default": "a cat reading a book"}),
-                "model": (["veo-2.0-generate-001"], {"default": "veo-2.0-generate-001"}),
+                "model": ([
+                    "veo-3.1-generate-preview",
+                    "veo-3.1-fast-generate-preview",
+                    "veo-3.1-lite",
+                    "veo-2.0-generate-001",
+                ], {"default": "veo-3.1-generate-preview"}),
                 "aspect_ratio": (["16:9", "9:16"], {"default": "16:9"}),
-                "duration_seconds": ("INT", {"default": 8, "min": 5, "max": 8, "step": 1}),
+                "resolution": (["720p", "1080p"], {"default": "720p"}),
+                "duration_seconds": ("INT", {"default": 8, "min": 4, "max": 8, "step": 1}),
                 "api_key": ("STRING", {"default": "", "multiline": False, "tooltip": "Directly put Gemini API key or .env variable name (GEMINI_API_KEY)"}),
                 "seed": ("INT", {"default": 69, "min": -1, "max": 2147483646, "step": 1}),
             },
@@ -32,7 +38,7 @@ class VeoGeminiVideoGenerator:
     CATEGORY = "video/generation"
     OUTPUT_IS_LIST = (True,)
     
-    def generate_video(self, seed, prompt, model, aspect_ratio, duration_seconds, api_key,
+    def generate_video(self, seed, prompt, model, aspect_ratio, resolution, duration_seconds, api_key,
                       negative_prompt=None, image=None):
         
         # 1. Setup Client
@@ -40,24 +46,35 @@ class VeoGeminiVideoGenerator:
         if not key: raise ValueError("API Key required")
         client = genai.Client(http_options={"api_version": "v1beta"}, api_key=key)
 
-        # 2. Prepare Config (Seed used for ComfyUI caching only)
+        # 2. Duration compatibility clamp (Veo 2.0 requires minimum 5s)
+        dur = duration_seconds
+        if "veo-2.0" in model and dur < 5:
+            dur = 5
+
+        # 3. Prepare Config
+        config_params = {
+            "aspect_ratio": aspect_ratio,
+            "duration_seconds": dur,
+            "negative_prompt": negative_prompt.strip() if negative_prompt else None,
+        }
+
+        # Resolution is supported on Veo 3.x
+        if "veo-3" in model:
+            config_params["resolution"] = resolution
+
         gen_kwargs = {
             "model": model, 
             "prompt": prompt, 
-            "config": types.GenerateVideosConfig(
-                aspect_ratio=aspect_ratio,
-                duration_seconds=duration_seconds,
-                negative_prompt=negative_prompt.strip() if negative_prompt else None,
-            )
+            "config": types.GenerateVideosConfig(**config_params)
         }
 
-        # 3. Handle Image (In-Memory, ComfyUI Tensors are always [B,H,W,C])
+        # 4. Handle Image Input (Image-to-Video)
         if image is not None:
             buf = io.BytesIO()
             Image.fromarray((image[0].cpu().numpy() * 255).astype(np.uint8)).save(buf, format="PNG")
             gen_kwargs["image"] = types.Image(image_bytes=buf.getvalue(), mime_type="image/png")
 
-        # 4. Generate & Poll
+        # 5. Generate & Poll
         op = client.models.generate_videos(**gen_kwargs)
         print(f"Gemini Veo Operation: {op.name}")
         
@@ -68,7 +85,7 @@ class VeoGeminiVideoGenerator:
         if not op.response or not op.response.generated_videos:
             raise Exception("No videos generated")
 
-        # 5. Download & Decode (Direct Memory Stream)
+        # 6. Download & Decode Video Frames
         video_bytes = io.BytesIO(client.files.download(file=op.response.generated_videos[0].video))
         
         container = av.open(video_bytes)

@@ -18,13 +18,13 @@ modules = [
     "flux2_replicate",
     "openai_tts",
     "openai_node",
-    "sora",
     "cleanup",
     "tripoTextToModel",
     "tripoImageToModel",
     "grok",
     "groq_node",
     "groq_orpheus",
+    "gemini_tts3",
 ]
 
 NODE_CLASS_MAPPINGS = {}

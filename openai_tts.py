@@ -15,18 +15,22 @@ class OpenAITTSNode:
                     "gpt-4o-mini-tts",
                     "tts-1",
                     "tts-1-hd"
-                ],),
+                ], {"default": "gpt-4o-mini-tts"}),
                 "voice": ([
                     "alloy",
                     "ash",
+                    "ballad",
+                    "cedar",
                     "coral",
                     "echo",
                     "fable",
-                    "onyx",
+                    "marin",
                     "nova",
+                    "onyx",
                     "sage",
-                    "shimmer"
-                ],),
+                    "shimmer",
+                    "verse"
+                ], {"default": "alloy"}),
                 "response_format": ([
                     "mp3",
                     "opus",
@@ -34,12 +38,16 @@ class OpenAITTSNode:
                     "flac",
                     "wav",
                     "pcm"
-                ],),
+                ], {"default": "mp3"}),
                 "speed": ("FLOAT", {"default": 1.0, "min": 0.25, "max": 4.0, "step": 0.01}),
                 "api_key": ("STRING", {"multiline": False, "default": "", "tooltip": "Directly put OpenAI API key or .env variable name (OPENAI_API_KEY)"}),
             },
             "optional": {
-                "instructions": ("STRING", {"multiline": True, "default": ""}),
+                "instructions": ("STRING", {
+                    "multiline": True, 
+                    "default": "",
+                    "tooltip": "Supported on gpt-4o-mini-tts. Natural-language guidance for tone, emotion, or pacing (e.g. 'Whisper excitedly', 'Speak like a calm news anchor')."
+                }),
             }
         }
     
@@ -78,7 +86,7 @@ class OpenAITTSNode:
         
         # Add instructions only if provided and model supports it
         if instructions.strip() and model not in ["tts-1", "tts-1-hd"]:
-            data["instructions"] = instructions
+            data["instructions"] = instructions.strip()
         
         response = requests.post(url, json=data, headers=headers)
         
@@ -100,7 +108,7 @@ class OpenAITTSNode:
     
     @classmethod
     def IS_CHANGED(cls, **kwargs):
-        return f"{kwargs.get('text', '')}-{kwargs.get('voice', '')}-{kwargs.get('model', '')}"
+        return f"{kwargs.get('text', '')}-{kwargs.get('voice', '')}-{kwargs.get('model', '')}-{kwargs.get('speed', 1.0)}-{kwargs.get('instructions', '')}"
 
 NODE_CLASS_MAPPINGS = {"OpenAITTSNode": OpenAITTSNode}
 NODE_DISPLAY_NAME_MAPPINGS = {"OpenAITTSNode": "OpenAI Text-to-Speech"}

@@ -12,7 +12,14 @@ class GPTImageNode:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "model": (["gpt-image-1", "gpt-image-1-mini", "gpt-image-1.5", "gpt-image-2"],),
+                "model": ([
+                    "gpt-image-2.5-sunburst",
+                    "gpt-image-2.5-flare",
+                    "gpt-image-2",
+                    "gpt-image-1.5",
+                    "gpt-image-1",
+                    "gpt-image-1-mini"
+                ], {"default": "gpt-image-2.5-sunburst"}),
                 "prompt": ("STRING", {"multiline": True}),
                 "api_key": ("STRING", {"multiline": False, "default": "", "tooltip": "Directly put OpenAI API key or .env variable name (OPENAI_API_KEY)"}),
                 "background": (["auto", "transparent", "opaque"], {"default": "auto"}),

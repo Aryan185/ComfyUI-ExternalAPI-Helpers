@@ -13,9 +13,27 @@ class OpenAILLMNode:
         return {
             "required": {
                 "prompt": ("STRING", {"multiline": True, "default": ""}),
-                "model": (["gpt-5.4", "gpt-5.4-pro", "gpt-4.1", "gpt-4.1-mini", "gpt-5", "gpt-5.2", "gpt-5-mini", "gpt-5-nano", "gpt-5.2-pro", "o1", "o3-mini"],),
+                "model": ([
+                    "gpt-6",
+                    "gpt-6.1-sol",
+                    "gpt-6-luna",
+                    "gpt-5.6-sol",
+                    "gpt-5.6-terra",
+                    "gpt-5.6-luna",
+                    "gpt-5.5",
+                    "gpt-5.5-pro",
+                    "gpt-5.4",
+                    "gpt-5.4-pro",
+                    "gpt-5.2",
+                    "gpt-5.2-pro",
+                    "gpt-5",
+                    "gpt-5-mini",
+                    "gpt-5-nano",
+                    "gpt-4.1",
+                    "gpt-4.1-mini",
+                ], {"default": "gpt-6"}),
                 "temperature": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 2.0, "step": 0.01}),
-                "reasoning_effort": (["low", "medium", "high"],),
+                "reasoning_effort": (["none", "low", "medium", "high"], {"default": "medium"}),
                 "api_key": ("STRING", {"multiline": False, "default": "", "tooltip": "Directly put OpenAI API key or .env variable name (OPENAI_API_KEY)"}),
                 "max_output_tokens": ("INT", {"default": 16384, "min": 1, "max": 32768, "step": 1})
             },
@@ -61,8 +79,10 @@ class OpenAILLMNode:
             "max_output_tokens": max_output_tokens
         }
 
+        # Pass reasoning effort only if supported and not set to "none"
         if not model.startswith("gpt-4"):
-            request_params["reasoning"] = {"effort": reasoning_effort}
+            if reasoning_effort != "none":
+                request_params["reasoning"] = {"effort": reasoning_effort}
         else:
             print(f"Skipping reasoning parameter for {model} (not supported)")
 

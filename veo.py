@@ -31,15 +31,19 @@ class VeoVertexVideoGenerator:
                 ], {"default": "us-central1"}),
                 "service_account": ("STRING", {"multiline": True, "default": "", "tooltip": "Paste service account JSON content"}),
                 "model": ([
-                    "veo-2.0-generate-001", "veo-2.0-generate-exp", "veo-2.0-generate-preview",
-                    "veo-3.0-generate-001", "veo-3.0-fast-generate-001", 
-                    "veo-3.1-generate-001", "veo-3.1-fast-generate-001"
-                ], {"default": "veo-3.0-generate-001"}),
+                    "veo-3.1-generate-001",
+                    "veo-3.1-fast-generate-001",
+                    "veo-3.0-generate-001",
+                    "veo-3.0-fast-generate-001",
+                    "veo-2.0-generate-001",
+                    "veo-2.0-generate-exp",
+                    "veo-2.0-generate-preview",
+                ], {"default": "veo-3.1-generate-001"}),
                 "resolution": (["720p", "1080p"], {"default": "720p"}),
                 "aspect_ratio": (["16:9", "9:16"], {"default": "16:9"}),
-                "duration_seconds": ("INT", {"default": 4, "min": 4, "max": 8, "step": 1}),
+                "duration_seconds": ("INT", {"default": 8, "min": 4, "max": 8, "step": 1}),
                 "seed": ("INT", {"default": 69, "min": 1, "max": 2147483646, "step": 1}),
-                "generate_audio": ("BOOLEAN", {"default": False}),
+                "generate_audio": ("BOOLEAN", {"default": True}),
                 "fps": (["24"], {"default": "24"}),
             },
             "optional": {
@@ -66,16 +70,29 @@ class VeoVertexVideoGenerator:
 
         try:
             client = genai.Client(vertexai=True, project=project_id, location=location)
+
+            # Veo 2.0 requires minimum 5s duration and does not support audio generation
+            dur = duration_seconds
+            is_veo2 = "veo-2.0" in model
+            if is_veo2 and dur < 5:
+                dur = 5
+
+            should_gen_audio = False if is_veo2 else generate_audio
             
-            config = types.GenerateVideosConfig(
-                resolution=resolution,
-                aspect_ratio=aspect_ratio,
-                duration_seconds=duration_seconds,
-                generate_audio=generate_audio,
-                fps=int(fps),
-                seed=seed if seed != -1 else None,
-                negative_prompt=negative_prompt.strip() if negative_prompt else None
-            )
+            config_kwargs = {
+                "aspect_ratio": aspect_ratio,
+                "duration_seconds": dur,
+                "fps": int(fps),
+                "seed": seed if seed != -1 else None,
+                "negative_prompt": negative_prompt.strip() if negative_prompt else None
+            }
+
+            # Only Veo 3.x accepts resolution and audio generation flags
+            if not is_veo2:
+                config_kwargs["resolution"] = resolution
+                config_kwargs["generate_audio"] = should_gen_audio
+
+            config = types.GenerateVideosConfig(**config_kwargs)
 
             # Helper: Tensor -> Bytes
             def tensor_to_bytes(t):
@@ -112,7 +129,7 @@ class VeoVertexVideoGenerator:
 
             # Decode Audio
             audio = None
-            if generate_audio:
+            if should_gen_audio:
                 video_bytes.seek(0)
                 container = av.open(video_bytes)
                 if container.streams.audio:

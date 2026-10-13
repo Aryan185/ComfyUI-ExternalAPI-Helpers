@@ -14,7 +14,13 @@ class NanoBananaNode:
             "required": {
                 "prompt": ("STRING", {"multiline": True, "default": ""}),
                 "api_key": ("STRING", {"multiline": False, "default": "", "tooltip": "Directly put Gemini API key or .env variable name (GEMINI_API_KEY)"}),
-                "model": (["gemini-3-pro-image", "gemini-2.5-flash-image", "gemini-3.1-flash-image", "gemini-3.1-flash-lite-image"]),
+                "model": ([
+                    "gemini-nano-banana-2.1",
+                    "gemini-3-pro-image",
+                    "gemini-3.1-flash-lite-image",
+                    "gemini-3.1-flash-image",
+                    "gemini-2.5-flash-image",
+                ], {"default": "gemini-nano-banana-2.1"}),
                 "aspect_ratio": (["1:1", "2:3", "3:2", "3:4", "4:3", "9:16", "16:9", "21:9"],),
                 "resolution": (["1K", "2K", "4K"], {"default": "1K"}),
                 "temperature": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 1.0, "step": 0.01}),
@@ -68,13 +74,13 @@ class NanoBananaNode:
 
         tools = None
         if google_search:
-            if "gemini-2.5" in model or "gemini-3.1-flash-lite-image" in model:
+            if "gemini-2.5" in model or "flash-lite" in model:
                 print(f"Ignoring google_search: {model} does not support it.")
             else:
                 tools = [types.Tool(googleSearch=types.GoogleSearch())]
 
         img_config_params = {"aspect_ratio": aspect_ratio}
-        if "gemini-3-pro" in model:
+        if "gemini-2.5" not in model and "flash-lite" not in model:
             img_config_params["image_size"] = resolution
 
         config = types.GenerateContentConfig(
